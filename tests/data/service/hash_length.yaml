@@ -1,0 +1,6 @@
+services:
+- hash: abcdef7hijk
+  hash_length: 7
+  name: hash_length
+  path: homeless-templates/redirector.yaml
+  url: https://github.com/openshiftio/saas/
