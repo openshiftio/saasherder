@@ -1,0 +1,7 @@
+contexts:
+- data:
+    services_dir: tests/data/service
+    templates_dir: tests/data/template
+    output_dir: saas-processed
+  name: saas
+current: saas

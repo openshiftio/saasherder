@@ -1,0 +1,67 @@
+import os
+import anymarkup
+
+class SaasConfig(object):
+  def __init__(self, path):
+    self.path = path
+    self.load()
+
+  def load(self):
+    self.config = anymarkup.parse_file(self.path)
+    current = self.context_exists(self.config["current"])
+    if not current:
+      print("Could not find current context, using the first one: %s" % self.config["contexts"][0]["name"])
+      self.config["current"] = self.config["contexts"][0]["name"]
+    else:
+      print("Current context: %s" % current["name"])
+
+  def save(self):
+    anymarkup.serialize_file(self.config, self.path)
+
+  def context_exists(self, context):
+    for c in self.config["contexts"]:
+      if context == c["name"]:
+        return c
+    return None
+
+  def add_context(self, name, services_dir, templates_dir, output_dir):
+    c = self.context_exists(name)
+    
+    if c:
+      print("Context %s exists, updating." % name)
+      context = c
+    else:
+      context = {}
+    
+    context["name"] = name
+    context["data"] = {}
+    context["data"]["services_dir"] = services_dir
+    context["data"]["templates_dir"] = templates_dir
+    context["data"]["output_dir"] = output_dir
+
+    if not c:
+      self.config["contexts"].append(context)
+
+    self.save()
+
+  def switch_context(self, context):
+    if context == self.config["current"]:
+      return
+
+    if self.context_exists(context):
+      self.config["current"] = context
+      self.save()
+      print("Switchted context to %s" % context)
+    else:
+      raise Exception("Context %s does not exist" % context)
+
+  def current(self):
+    return self.config["current"]
+
+  def get(self, key):
+    context = self.context_exists(self.current())
+
+    if not context:
+      raise Exception("Context set as 'current' does not exist")
+
+    return context["data"][key]
