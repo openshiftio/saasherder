@@ -19,7 +19,7 @@ if [ -z "${DRY_RUN}" ]; then
     DRY_RUN=false
 fi
 
-SAAS_GROUPS="dsaas bay keycloak"
+SAAS_GROUPS=$(${CMD} config get-contexts)
 
 function git_prep {
     # should also check that the git master co is clean

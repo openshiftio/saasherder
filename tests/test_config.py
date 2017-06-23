@@ -45,4 +45,8 @@ class TestConfig(object):
   def test_context_get(self):
     sc = SaasConfig(temp_path)
     assert sc.get("services_dir") == "tests/data/service"
+
+  def test_config_get_contexts(self):
+    sc = SaasConfig(temp_path)
+    assert len(list(sc.get_contexts())) == 1
     
