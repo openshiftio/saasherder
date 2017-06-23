@@ -48,5 +48,12 @@ class TestConfig(object):
 
   def test_config_get_contexts(self):
     sc = SaasConfig(temp_path)
-    assert len(list(sc.get_contexts())) == 1
+    assert len(list(sc.get_contexts())) == 2
+
+  def test_set_context_on_init(self):
+    context = "foobar"
+    sc = SaasConfig(temp_path, None)
+    assert sc.current() == "saas"
+    sc = SaasConfig(temp_path, context)
+    assert sc.current() == context
     

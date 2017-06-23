@@ -6,16 +6,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class SaasConfig(object):
-  def __init__(self, path):
+  def __init__(self, path, context=None):
     self.path = path
-    self.load()
+    self.load(context)
 
-  def load(self):
+  def load(self, context=None):
     self.config = anymarkup.parse_file(self.path)
-    current = self.context_exists(self.config["current"])
-    if not current:
-      logger.error("Could not find current context, using the first one: %s" % self.config["contexts"][0]["name"])
-      self.config["current"] = self.config["contexts"][0]["name"]
+    if not context:
+      context = self.current()
+    ctx = self.context_exists(context)
+    if not ctx and not context:
+      raise Exception("Could not find current context %s" % (context))
+    elif context != self.current():
+      self.switch_context(context)
 
   def save(self):
     anymarkup.serialize_file(self.config, self.path)
@@ -64,7 +67,7 @@ class SaasConfig(object):
     context = self.context_exists(self.current())
 
     if not context:
-      raise Exception("Context set as 'current' does not exist")
+      raise Exception("Context %s, set as 'current', does not exist" % self.current())
 
     return context["data"][key]
   

@@ -39,6 +39,7 @@ function oc_apply {
 }
 
 function pull_tag {
+    set -x
     local CONTEXT=$1
     local PROCESSED_DIR=$2
 

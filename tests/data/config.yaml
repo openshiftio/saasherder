@@ -4,4 +4,9 @@ contexts:
     templates_dir: tests/data/template
     output_dir: saas-processed
   name: saas
+- data:
+    service_dir: foo
+    templates_dir: bar
+    output_dir: baz
+  name: foobar
 current: saas

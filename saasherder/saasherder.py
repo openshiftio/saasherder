@@ -32,7 +32,7 @@ class SaasHerder(object):
     return self._services
 
   def __init__(self, config_path, context):
-    self.config = SaasConfig(config_path)
+    self.config = SaasConfig(config_path, context)
     if context:
       self.config.switch_context(context)
 
