@@ -7,6 +7,10 @@ from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class SaasHerder(object):
   @property
@@ -54,7 +58,7 @@ class SaasHerder(object):
     if not output:
       output = self.services[name]["file"]
     anymarkup.serialize_file(service_file_cont, output)
-    print("Services written to file %s." % output)
+    logger.info("Services written to file %s." % output)
 
   def prep_templates_dir(self):
     """ Create a dir to store pulled templates if it does not exist """
@@ -99,9 +103,9 @@ class SaasHerder(object):
     """ Pull/download templates from repositories """
     service_list = self.get_services(services)
     for s in service_list:
-      print("Service: %s" % s.get("name"))
+      logger.info("Service: %s" % s.get("name"))
       url = self.get_raw(s)
-      print("Downloading: %s" % self.get_raw(s))
+      logger.info("Downloading: %s" % self.get_raw(s))
       headers={}
       if token:
         headers = {"Authorization": "token %s" % token, "Accept": "application/vnd.github.v3.raw"}
@@ -112,13 +116,13 @@ class SaasHerder(object):
       if not dry_run:
         with open(filename, "w") as fp:
           fp.write(r.content)
-        print("Template written to %s" % filename)
+        logger.info("Template written to %s" % filename)
 
   def update(self, cmd_type, service, value, output_file=None):
     """ Update service object and write it to file """
     services = self.get_services([service])
     if services[0][cmd_type] == value:
-      print("Skipping update of %s, no change" % service)
+      logger.warning("Skipping update of %s, no change" % service)
       return
     else:
       services[0][cmd_type] = value
@@ -126,7 +130,7 @@ class SaasHerder(object):
     try:
       self.collect_services([service], dry_run=True)
     except Exception as e:
-      print("Aborting update: %s" % e)
+      logger.error("Aborting update: %s" % e)
       return  
 
     if not output_file:
@@ -136,12 +140,11 @@ class SaasHerder(object):
   def process_image_tag(self, services, output_dir, force=False, local=False):
     services_list = self.get_services(services)
     if not find_executable("oc"):
-      print("Aborting: Could not find oc binary")
-      exit(1)
+      raise Exception("Aborting: Could not find oc binary")
 
     for s in services_list:
       if s.get("skip") and not force:
-        print("INFO: Skipping %s, use -f to force processing of all templates" % s.get("name"))
+        logger.warning("INFO: Skipping %s, use -f to force processing of all templates" % s.get("name"))
         continue
       output = ""
       template_file = self.get_template_file(s)
@@ -160,7 +163,7 @@ class SaasHerder(object):
       cmd = ["oc", "process", local_opt, "--output", "yaml", "-f", template_file]
       process_cmd = cmd + params_processed
       output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
-      print("%s > %s" % (process_cmd, output_file))
+      logger.info("%s > %s" % (process_cmd, output_file))
       try:
         output = subprocess.check_output(process_cmd) 
         with open(output_file, "w") as fp:
@@ -169,7 +172,7 @@ class SaasHerder(object):
         output = subprocess.check_output(cmd) 
         with open(output_file, "w") as fp:
           fp.write(output)
-        print("WARNING: Templating failed, copying original file to %s" % output_file)
+        logger.warning("Templating failed, copying original file to %s" % output_file)
         pass
 
   def template(self, cmd_type, services, output_dir=None, force=False, local=False):

@@ -1,6 +1,10 @@
 import os
 import anymarkup
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 class SaasConfig(object):
   def __init__(self, path):
     self.path = path
@@ -10,10 +14,10 @@ class SaasConfig(object):
     self.config = anymarkup.parse_file(self.path)
     current = self.context_exists(self.config["current"])
     if not current:
-      print("Could not find current context, using the first one: %s" % self.config["contexts"][0]["name"])
+      logger.error("Could not find current context, using the first one: %s" % self.config["contexts"][0]["name"])
       self.config["current"] = self.config["contexts"][0]["name"]
     else:
-      print("Current context: %s" % current["name"])
+      logger.info("Current context: %s" % current["name"])
 
   def save(self):
     anymarkup.serialize_file(self.config, self.path)
@@ -28,7 +32,7 @@ class SaasConfig(object):
     c = self.context_exists(name)
     
     if c:
-      print("Context %s exists, updating." % name)
+      logger.info("Context %s exists, updating." % name)
       context = c
     else:
       context = {}
@@ -51,7 +55,7 @@ class SaasConfig(object):
     if self.context_exists(context):
       self.config["current"] = context
       self.save()
-      print("Switchted context to %s" % context)
+      logger.info("Switchted context to %s" % context)
     else:
       raise Exception("Context %s does not exist" % context)
 
@@ -65,3 +69,11 @@ class SaasConfig(object):
       raise Exception("Context set as 'current' does not exist")
 
     return context["data"][key]
+  
+  def get_contexts(self):
+    for c in self.config["contexts"]:
+      yield c["name"]
+
+  def print_contexts(self):
+    for c in self.get_contexts():
+      print(c)

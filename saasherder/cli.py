@@ -3,6 +3,7 @@
 import argparse
 
 from saasherder import SaasHerder
+from config import SaasConfig
 
 def main():
     parser = argparse.ArgumentParser(description='')
@@ -47,6 +48,10 @@ def main():
     subparser_template.add_argument("services", nargs="*", default="all",
                                     help="Service which template should be updated")
 
+    subparser_template = subparsers.add_parser("config")
+    subparser_template.add_argument("type", choices=["get-contexts"],
+                                    help="Subcommands for config command")
+
     args = parser.parse_args()
 
     se = SaasHerder(args.config, args.context)
@@ -59,6 +64,10 @@ def main():
       se.template(args.type, args.services, args.output_dir, force=args.force)
     elif args.command == "get":
       se.get(args.type, args.services)
+    elif args.command == "config":
+      sc = SaasConfig(args.config)
+      if args.type == "get-contexts":
+        sc.print_contexts()
 
 
 if __name__ == "__main__":
