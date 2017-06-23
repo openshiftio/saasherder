@@ -36,6 +36,8 @@ class SaasHerder(object):
     if context:
       self.config.switch_context(context)
 
+    logger.info("Current context: %s" % self.config.current())
+
     self._services = None
     self.load_from_config()
 
@@ -163,16 +165,17 @@ class SaasHerder(object):
       cmd = ["oc", "process", local_opt, "--output", "yaml", "-f", template_file]
       process_cmd = cmd + params_processed
       output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
-      logger.info("%s > %s" % (process_cmd, output_file))
+      logger.info("%s > %s" % (" ".join(process_cmd), output_file))
       try:
         output = subprocess.check_output(process_cmd) 
         with open(output_file, "w") as fp:
           fp.write(output)
       except subprocess.CalledProcessError as e:
+        #If the processing failed, try without PARAMS and warn
         output = subprocess.check_output(cmd) 
         with open(output_file, "w") as fp:
           fp.write(output)
-        logger.warning("Templating failed, copying original file to %s" % output_file)
+        logger.warning("Templating of %s with parameters failed, trying without" % template_file)
         pass
 
   def template(self, cmd_type, services, output_dir=None, force=False, local=False):
