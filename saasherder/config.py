@@ -16,8 +16,6 @@ class SaasConfig(object):
     if not current:
       logger.error("Could not find current context, using the first one: %s" % self.config["contexts"][0]["name"])
       self.config["current"] = self.config["contexts"][0]["name"]
-    else:
-      logger.info("Current context: %s" % current["name"])
 
   def save(self):
     anymarkup.serialize_file(self.config, self.path)
