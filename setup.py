@@ -17,7 +17,7 @@ def get_version():
     with open(os.path.join(NAME, 'version.py')) as f:
         version = f.readline()
     # dirty, remove trailing and leading chars
-    return version.split(' = ')[1][1:-2]
+    return version.split(' = ')[1].strip("'")
 
 setup(
     name=NAME,
@@ -29,7 +29,7 @@ setup(
     maintainer='Vaclav Pavlin',
     maintainer_email='vasek@redhat.com',
     description='OpenShift deployment version tracking tool',
-    url='https://github.com/openshiftio/saas',
+    url='https://github.com/openshiftio/saasherder',
     license='BSD',
     entry_points = {
               'console_scripts': [
