@@ -9,6 +9,7 @@ if echo ${0} | grep -q "/"; then
 fi
 
 #Figure out if the tool is installed and set CMD accordingly
+echo $PATH
 if which saasherder &> /dev/null; then
     CMD="saasherder"
 else
