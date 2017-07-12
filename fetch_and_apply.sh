@@ -76,7 +76,7 @@ for g in `echo ${SAAS_CONTEXTS}`; do
 
     pull_tag ${CONTEXT} ${TSTAMPDIR}
 
-    for f in `ls ${TSTAMPDIR}`; do
+    for f in `ls ${TSTAMPDIR}/*`; do
         oc_apply $f
     done
 
