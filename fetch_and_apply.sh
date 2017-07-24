@@ -19,6 +19,10 @@ if [ -z "${DRY_RUN}" ]; then
     DRY_RUN=false
 fi
 
+if [ -n "${APPSEC}" ]; then
+    echo "=> Deploying to PROD and APPSEC environments"
+fi
+
 SAAS_CONTEXTS=$(${CMD} config get-contexts)
 echo -e "Found contexts:\n${SAAS_CONTEXTS}"
 
@@ -30,7 +34,7 @@ function git_prep {
 
 function oc_apply {
     config=""
-    [ -n "${CONF}" ] && config="--config=${CONF}"
+    [ -n "${2}" ] && config="--config=${2}"
     if ${DRY_RUN}; then
         echo "oc $config apply -f $1"
     else
@@ -77,8 +81,14 @@ for g in `echo ${SAAS_CONTEXTS}`; do
     pull_tag ${CONTEXT} ${TSTAMPDIR}
 
     for f in `ls ${TSTAMPDIR}/*`; do
-        oc_apply $f
+        oc_apply $f ${CONF}
     done
+
+    if [ -n "${APPSEC}" ]; then
+        for f in `ls ${TSTAMPDIR}/*`; do
+            oc_apply $f "${CONF}-appsec"
+        done
+    fi
 
     if [ $(find ${TSTAMPDIR}/ -name \*.yaml | wc -l ) -lt 1 ]; then
         # if we didnt apply anything, dont keep the dir around
