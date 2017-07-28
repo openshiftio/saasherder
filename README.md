@@ -111,6 +111,45 @@ It requires `oc` binary to be present on path and logged into some OpenShift ins
 saasherder  --context dsaas template --output-dir test --local tag 
 ```
 
+
+### Environments
+
+If you deploy to multiple environments (like we do, e.g. `production`, `staging`, etc.) you might need to slightly adjust how your service is deployed. There is a structure `environments` for it (see above for explanation). Let's assume you are now deploying to `production`. As you can change `path` in service yaml file for environments (to ensure upgrade path without breaking other environments), first pull templates with environment specified
+
+```
+saasherder --context dsaas --environment production pull
+```
+
+Next step is to process templates - and again, we need to specify the environment to make sure right values (e.g. parameters) are used
+
+```
+saasherder --context dsaas --environment production template tag
+```
+
+To give you real world example - we have services which set `replicas` through parameters to make it easy to scale in a predictable way. In production environment, we'll want to scale to 100 pods. But in staging environment we will be fine with 10. To do this is as simple as adding
+
+```
+environments:
+- name: production
+  parameters:
+    REPLICAS: 100
+- name: staging
+  parameters:
+    REPLICAS: 10
+```
+
+Assuming you have parameter `REPLICAS` in your OpenShift template.
+
+Another example might be when adding new service. You want to deploy to staging, catch all bugs and then deploy to production. You can do it simply by adding
+
+```
+environments:
+- name: production
+  skip: True
+```
+
+This snippet will ensure your new service will skip deployment to production, but will still deploy for other environments and also if there is no environment given to CLI.
+
 ## Test
 
 There are couple tests for SaaS Herder. To run them, you can use included `tests/Dockerfile.test`
