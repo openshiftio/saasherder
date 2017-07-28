@@ -30,8 +30,14 @@ services:
   name: some-name
   path: /openshift/template.yaml
   url: https://github.com/org/repo/
+  skip: True
   parameters:
     SOME_PARAM: some_value
+  environments:
+  - name: production
+    parameters:
+      SOME_PARAM: prod_value
+    skip: True
 ```
 
 * *hash*: Commit hash or branch which is used a) for downloading OpenShift template and b) to generate image tag for template processing (`master` is translated to `latest`)
@@ -39,7 +45,10 @@ services:
 * *name*: Name of the service
 * *path*: Path to the template in the repo
 * *url*: URL of the repository which contains the template
+* *skip*: False by default, if True, the service will be skipped from processing (i.e. template will not be processed and output file for service will not be produced)
 * *parameters*: An object where key is the parameter name and value is the parameter value. These parameters will be added to `oc process` when processing the template
+* *environments*: A list where you can specify multiple environments which can be selected by passing an argument `--environment`. Values in a given environment will override
+  values in the top level section. Anything can be overridden but `name`, `url` and `hash`.
 
 ## Config YAML
 

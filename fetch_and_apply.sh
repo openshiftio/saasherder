@@ -3,6 +3,7 @@
 TSTAMP=$(date +%Y%m%d_%H%M%S)
 TPLDIR="dsaas-templates"
 CONF="/home/`whoami`/.kube/config"
+
 SCRIPT_PATH="python ."
 if echo ${0} | grep -q "/"; then
     SCRIPT_PATH="python ${0%/*}"
@@ -21,6 +22,10 @@ fi
 
 if [ -n "${APPSEC}" ]; then
     echo "=> Deploying to PROD and APPSEC environments"
+fi
+
+if [ -z "${ENVIRONMENT}" ]; then
+    ENVIRONMENT="None"
 fi
 
 SAAS_CONTEXTS=$(${CMD} config get-contexts)
@@ -45,6 +50,7 @@ function oc_apply {
 function pull_tag {
     local CONTEXT=$1
     local PROCESSED_DIR=$2
+    local SAAS_ENV=$3
 
     local TEMPLATE_DIR=${CONTEXT}-templates
     
@@ -58,9 +64,9 @@ function pull_tag {
 
     if [ -e /home/`whoami`/${CONTEXT}-gh-token-`whoami` ]; then GH_TOKEN=" --token "$(cat /home/`whoami`/${CONTEXT}-gh-token-`whoami`); fi
     
-    ${CMD} --context ${CONTEXT} pull $GH_TOKEN
+    ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} pull $GH_TOKEN
 
-    ${CMD} --context ${CONTEXT} template --output-dir ${PROCESSED_DIR} ${LOCAL} tag
+    ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} template --output-dir ${PROCESSED_DIR} ${LOCAL} tag
 }
 
 for g in `echo ${SAAS_CONTEXTS}`; do
@@ -78,14 +84,20 @@ for g in `echo ${SAAS_CONTEXTS}`; do
     TSTAMPDIR=${CONTEXT}-${TSTAMP}
     mkdir -p ${TSTAMPDIR}
 
-    pull_tag ${CONTEXT} ${TSTAMPDIR}
+    pull_tag ${CONTEXT} ${TSTAMPDIR} ${ENVIRONMENT}
 
     for f in `ls ${TSTAMPDIR}/*`; do
         oc_apply $f ${CONF}
     done
 
+
     if [ -n "${APPSEC}" ]; then
-        for f in `ls ${TSTAMPDIR}/*`; do
+        TSTAMPDIR_APPSEC="${CONTEXT}-${TSTAMP}-appsec"
+        mkdir -p ${TSTAMPDIR_APPSEC} 
+
+        pull_tag ${CONTEXT} ${TSTAMPDIR_APPSEC} "appsec"
+    
+        for f in `ls ${TSTAMPDIR_APPSEC}/*`; do
             oc_apply $f "${CONF}-appsec"
         done
     fi
