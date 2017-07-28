@@ -24,6 +24,7 @@ class SaasHerder(object):
         service = anymarkup.parse_file(service_file)
         for s in service["services"]:
           s["file"] = f
+          self.apply_environment_config(s)
           self._services[s["name"]] = s
           if not self._service_files.get(f):
             self._service_files[f] = []
@@ -31,7 +32,7 @@ class SaasHerder(object):
 
     return self._services
 
-  def __init__(self, config_path, context):
+  def __init__(self, config_path, context, environment=None):
     self.config = SaasConfig(config_path, context)
     if context:
       self.config.switch_context(context)
@@ -39,6 +40,7 @@ class SaasHerder(object):
     logger.info("Current context: %s" % self.config.current())
 
     self._services = None
+    self._environment = None if environment == "None" else environment
     self.load_from_config()
 
   def load_from_config(self):
@@ -47,6 +49,30 @@ class SaasHerder(object):
     self.output_dir = self.config.get("output_dir")
     self.prep_templates_dir()
 
+  def apply_environment_config(self, s):
+    if not s.get("environments") or not self._environment:
+      return
+    
+    found = False
+    for env in s.get("environments"):
+      if env["name"] == self._environment:
+        found = True
+        for key, val in env.iteritems():
+          if key == "name":
+            continue
+          if key == "url":
+            logger.error("You cannot change URL for an environment.")
+            continue
+          if key == "hash":
+            logger.error("You cannot change hash for an environment")
+
+          if type(val) is not dict:
+            s[key] = val
+          else:
+            s[key].update(val)
+
+    if not found:
+      logger.warning("Could not find given environment %s. Proceeding with top level values." % self._environment)
 
   def write_service_file(self, name, output=None):
     """ Writes service file to disk, either to original file name, or to a name given by output param """
@@ -78,6 +104,14 @@ class SaasHerder(object):
 
   def get_raw(self, service):
     """ Figure out the repo manager and return link to a file """
+
+    if not service["hash"]:
+      raise Exception("Commit hash or branch name needs to be provided.")
+    if not service["url"]:
+      raise Exception("URL to a repository needs to be provided.")
+    if not service["path"]:
+      raise Exception("Path in the repository needs to be provided.")
+
     if "github" in service.get("url"):
       return self.raw_github(service)
     elif "gitlab" in service.get("url"):
@@ -98,7 +132,10 @@ class SaasHerder(object):
       result = self.services.values()
     else:
       result.append(self.services.get(service_names))
-    
+
+    if len(result) == 0:
+      logger.error("Could not find services %s" % service_names)
+
     return result
 
   def collect_services(self, services, token=None, dry_run=False):
@@ -106,7 +143,12 @@ class SaasHerder(object):
     service_list = self.get_services(services)
     for s in service_list:
       logger.info("Service: %s" % s.get("name"))
-      url = self.get_raw(s)
+      try:
+        url = self.get_raw(s)
+      except Exception as e:
+        logger.error(e)
+        logger.warning("Skipping %s" % s.get("name"))
+        continue
       logger.info("Downloading: %s" % self.get_raw(s))
       headers={}
       if token:

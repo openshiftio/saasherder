@@ -13,6 +13,8 @@ def main():
                         help='Config file for saas herder')
     parser.add_argument('--context', default=None,
                         help='Context to use')
+    parser.add_argument('--environment', default=None,
+                        help='Environment to use to override service defined values')
     subparsers = parser.add_subparsers(dest="command")
     subparser_pull = subparsers.add_parser("pull")
     subparser_pull.add_argument('service', nargs="*", default="all")
@@ -56,7 +58,7 @@ def main():
 
     args = parser.parse_args()
 
-    se = SaasHerder(args.config, args.context)
+    se = SaasHerder(args.config, args.context, args.environment)
     if args.command == "pull":
       if args.service:
         se.collect_services(args.service, args.token)

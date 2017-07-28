@@ -43,7 +43,7 @@ objects:
             value: https://openshift.io/
           - name: REDIRECTOR_TYPE
             value: redirect
-          image: registry.centos.org/mattermost/nginx-redirector:${IMAGE_TAG}
+          image: ${IMAGE}:${IMAGE_TAG}
           imagePullPolicy: Always
           name: redirector
           ports:
@@ -78,3 +78,5 @@ objects:
 parameters:
   - name: IMAGE_TAG 
     value: latest
+  - name: IMAGE
+    value: registry.centos.org/mattermost/nginx-redirector
