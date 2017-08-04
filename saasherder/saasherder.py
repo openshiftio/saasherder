@@ -69,7 +69,10 @@ class SaasHerder(object):
           if type(val) is not dict:
             s[key] = val
           else:
-            s[key].update(val)
+            if key in s:
+              s[key].update(val)
+            else:
+              s[key] = val
 
     if not found:
       logger.warning("Could not find given environment %s. Proceeding with top level values." % self._environment)
@@ -223,10 +226,10 @@ class SaasHerder(object):
   def template(self, cmd_type, services, output_dir=None, force=False, local=False):
     """ Process templates """
     if not output_dir:
-      output_dir = self.templates_dir
-    else:
-      if not os.path.isdir(output_dir):
-        os.mkdir(output_dir) #FIXME
+      output_dir = self.output_dir
+
+    if not os.path.isdir(output_dir):
+      os.mkdir(output_dir) #FIXME
 
     if cmd_type == "tag":
       self.process_image_tag(services, output_dir, force, local)

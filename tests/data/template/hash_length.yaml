@@ -13,7 +13,7 @@ objects:
       run: redirector
     name: redirector
   spec:
-    replicas: 1
+    replicas: ${REPLICAS}
     selector:
       run: redirector
     strategy:
@@ -78,3 +78,5 @@ objects:
 parameters:
   - name: IMAGE_TAG 
     value: latest
+  - name: REPLICAS
+    value: "100"
