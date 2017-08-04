@@ -4,3 +4,7 @@ services:
   name: hash_length
   path: homeless-templates/redirector.yaml
   url: https://github.com/openshiftio/saas/
+  environments:
+  - name: no_params
+    parameters:
+      REPLICAS: 200

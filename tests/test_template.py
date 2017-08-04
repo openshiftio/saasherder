@@ -66,3 +66,13 @@ class TestTemplating(object):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None, environment)
     assert se.get_services("redirector")[0]["url"] != "some_url"
+
+  def test_template_environment_no_parameters(self):
+    environment = "no_params"
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None, environment)
+    se.template("tag", "hash_length", output_dir, local=True)
+    data = anymarkup.parse_file(os.path.join(output_dir, "hash_length.yaml"))
+    for item in data["items"]:
+      if item["kind"] == "DeploymentConfig":
+        assert item["spec"]["replicas"] == 200
