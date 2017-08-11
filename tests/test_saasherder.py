@@ -29,4 +29,12 @@ class TestSH(object):
     sh = SaasHerder(temp_path, None)
     assert len(sh.get_services("all")) == len(sh.services)
 
+  def test_sh_get_hash_lenght(self):
+    sh = SaasHerder(temp_path, None)
+    assert sh.get("hash_length", ["hash_length"])[0] == 7
+
+  def test_sh_get_hash_lenght_default(self):
+    sh = SaasHerder(temp_path, None)
+    assert sh.get("hash_length", ["redirector"])[0] == 6
+
   
