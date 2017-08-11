@@ -47,7 +47,7 @@ def main():
     subparser_template = subparsers.add_parser("get")
     #subparser_template.add_argument('--all', default=False, action='store_true',
     #                    help='Perform the action on all services')
-    subparser_template.add_argument("type", choices=["path", "url", "hash", "template-url"],
+    subparser_template.add_argument("type", choices=["path", "url", "hash", "hash_length", "template-url"],
                                     help="Update image tag with commit hash")
     subparser_template.add_argument("services", nargs="*", default="all",
                                     help="Service which template should be updated")

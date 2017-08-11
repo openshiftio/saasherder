@@ -39,6 +39,7 @@ class SaasHerder(object):
 
     logger.info("Current context: %s" % self.config.current())
 
+    self._default_hash_length = 6
     self._services = None
     self._environment = None if environment == "None" else environment
     self.load_from_config()
@@ -195,10 +196,13 @@ class SaasHerder(object):
         continue
       output = ""
       template_file = self.get_template_file(s)
-      l = 6 #How many chars to use from hash
+      l = self._default_hash_length #How many chars to use from hash
       if s.get("hash_length"):
         l = s.get("hash_length")
-      tag = "latest" if s["hash"] == "master" else s["hash"][:l]
+      if s["hash"] == "master":
+        tag = "latest"
+      else:
+        tag = s["hash"][:l]
       parameters = [{"name": "IMAGE_TAG", "value": tag}]
       service_params = s.get("parameters", {})
       for key, val in service_params.iteritems():
@@ -249,6 +253,9 @@ class SaasHerder(object):
       elif cmd_type in "template-url":
         print(self.get_raw(service))
         result.append(self.get_raw(service))
+      elif cmd_type in "hash_length":
+        print(self._default_hash_length)
+        result.append(self._default_hash_length)
       else:
         raise Exception("Unknown option for %s: %s" % (service["name"], cmd_type))
 
