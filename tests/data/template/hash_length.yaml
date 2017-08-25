@@ -75,6 +75,16 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: redirector
+  spec:
+    to:
+      kind: Service
+      name: redirector
+      weight: 100
+    wildcardPolicy: None
 parameters:
   - name: IMAGE_TAG 
     value: latest

@@ -78,6 +78,21 @@ class SaasHerder(object):
     if not found:
       logger.warning("Could not find given environment %s. Proceeding with top level values." % self._environment)
 
+  def apply_filter(self, template_filter, data):
+    data_obj=anymarkup.parse(data)
+    to_delete=[]
+    if data_obj.get("items"):
+      for obj in data_obj.get("items"):
+        if obj.get("kind") in template_filter:
+          to_delete.append(obj)
+
+      if len(to_delete) > 0:
+        logger.info("Removing %s from template." % " and ".join(template_filter))
+      for obj in to_delete:
+        data_obj["items"].remove(obj)
+
+    return anymarkup.serialize(data_obj, "yaml")
+
   def write_service_file(self, name, output=None):
     """ Writes service file to disk, either to original file name, or to a name given by output param """
     service_file_cont = {"services": []}
@@ -185,7 +200,7 @@ class SaasHerder(object):
       output_file = os.path.join(self.services_dir, services[0]["file"])
     self.write_service_file(service, output_file)
 
-  def process_image_tag(self, services, output_dir, force=False, local=False):
+  def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False):
     services_list = self.get_services(services)
     if not find_executable("oc"):
       raise Exception("Aborting: Could not find oc binary")
@@ -217,6 +232,8 @@ class SaasHerder(object):
       logger.info("%s > %s" % (" ".join(process_cmd), output_file))
       try:
         output = subprocess.check_output(process_cmd) 
+        if template_filter:
+          output = self.apply_filter(template_filter, output)
         with open(output_file, "w") as fp:
           fp.write(output)
       except subprocess.CalledProcessError as e:
@@ -227,7 +244,7 @@ class SaasHerder(object):
         logger.warning("Templating of %s with parameters failed, trying without" % template_file)
         pass
 
-  def template(self, cmd_type, services, output_dir=None, force=False, local=False):
+  def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False):
     """ Process templates """
     if not output_dir:
       output_dir = self.output_dir
@@ -236,7 +253,7 @@ class SaasHerder(object):
       os.mkdir(output_dir) #FIXME
 
     if cmd_type == "tag":
-      self.process_image_tag(services, output_dir, force, local)
+      self.process_image_tag(services, output_dir, template_filter, force, local)
 
   def get(self, cmd_type, services):
     """ Get information about services printed to stdout """
