@@ -66,7 +66,7 @@ function pull_tag {
     
     ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} pull $GH_TOKEN
 
-    ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} template --output-dir ${PROCESSED_DIR} ${LOCAL} tag
+    ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} template --filter Route --output-dir ${PROCESSED_DIR} ${LOCAL} tag
 }
 
 for g in `echo ${SAAS_CONTEXTS}`; do
