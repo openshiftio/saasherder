@@ -76,3 +76,12 @@ class TestTemplating(object):
     for item in data["items"]:
       if item["kind"] == "DeploymentConfig":
         assert item["spec"]["replicas"] == 200
+
+  def test_template_filter_route(self):
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None)
+    se.template("tag", "hash_length", output_dir, local=True, template_filter=["Route"])
+    data = anymarkup.parse_file(os.path.join(output_dir, "hash_length.yaml"))
+    for item in data["items"]:
+      if item["kind"] == "Route":
+        assert False

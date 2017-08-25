@@ -39,6 +39,8 @@ def main():
                         help='Use --local option for oc process - processing happen locally instead on server')
     subparser_template.add_argument('--output-dir', default=None,
                         help='Output directory where the updated templates will be stored')
+    subparser_template.add_argument('--filter', default=None,
+                        help='Comma separated list of kinds you want to filter out')
     subparser_template.add_argument("type", choices=["tag"],
                                     help="Update image tag with commit hash")
     subparser_template.add_argument("services", nargs="*", default="all",
@@ -65,7 +67,8 @@ def main():
     elif args.command == "update":
       se.update(args.type, args.service, args.value, output_file=args.output_file)
     elif args.command == "template":
-      se.template(args.type, args.services, args.output_dir, force=args.force, local=args.local)
+      filters = args.filter.split(",") if args.filter else None
+      se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
     elif args.command == "get":
       se.get(args.type, args.services)
     elif args.command == "config":
