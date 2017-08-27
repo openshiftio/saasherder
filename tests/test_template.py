@@ -1,4 +1,5 @@
 import os
+import re
 #import pytest
 import tempfile
 import anymarkup
@@ -85,3 +86,14 @@ class TestTemplating(object):
     for item in data["items"]:
       if item["kind"] == "Route":
         assert False
+
+  def test_template_filter_types(self):
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None)
+    se.template("tag", "hash_length", output_dir, local=True, template_filter=["Route"])
+    with open(os.path.join(output_dir, "hash_length.yaml"), "r") as fp:
+      for line in fp:
+        if re.search("    - name: '8080'", line):
+          return True
+    
+    assert False
