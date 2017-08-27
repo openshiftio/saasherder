@@ -1,5 +1,6 @@
 import os
 import anymarkup
+import yaml
 import requests
 import copy
 import subprocess
@@ -79,7 +80,7 @@ class SaasHerder(object):
       logger.warning("Could not find given environment %s. Proceeding with top level values." % self._environment)
 
   def apply_filter(self, template_filter, data):
-    data_obj=anymarkup.parse(data)
+    data_obj=yaml.safe_load(data)
     to_delete=[]
     if data_obj.get("items"):
       for obj in data_obj.get("items"):
@@ -91,7 +92,7 @@ class SaasHerder(object):
       for obj in to_delete:
         data_obj["items"].remove(obj)
 
-    return anymarkup.serialize(data_obj, "yaml")
+    return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
 
   def write_service_file(self, name, output=None):
     """ Writes service file to disk, either to original file name, or to a name given by output param """
