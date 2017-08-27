@@ -65,8 +65,15 @@ function pull_tag {
     if [ -e /home/`whoami`/${CONTEXT}-gh-token-`whoami` ]; then GH_TOKEN=" --token "$(cat /home/`whoami`/${CONTEXT}-gh-token-`whoami`); fi
     
     ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} pull $GH_TOKEN
+    PULL_RTN=$?
 
     ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} template --filter Route --output-dir ${PROCESSED_DIR} ${LOCAL} tag
+    PROCESS_RTN=$?
+
+    if [ ${PULL_RTN} -ne 0 -o ${PROCESS_RTN} -ne 0 ]; then
+        echo "Templates gathering and processing failed, failing job"
+        exit 1
+    fi
 }
 
 for g in `echo ${SAAS_CONTEXTS}`; do
@@ -86,10 +93,14 @@ for g in `echo ${SAAS_CONTEXTS}`; do
 
     pull_tag ${CONTEXT} ${TSTAMPDIR} ${ENVIRONMENT}
 
+    FAILED=false
     for f in `ls ${TSTAMPDIR}/*`; do
         oc_apply $f ${CONF}
+        if [ $? -ne 0 ]; then
+            echo "Failed applying ${f}, failing job"
+            exit 1
+        fi
     done
-
 
     if [ -n "${APPSEC}" ]; then
         TSTAMPDIR_APPSEC="${CONTEXT}-${TSTAMP}-appsec"
