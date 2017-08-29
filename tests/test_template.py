@@ -5,6 +5,7 @@ import tempfile
 import anymarkup
 from saasherder import SaasHerder
 from shutil import copyfile
+import subprocess
 
 service_dir = "tests/data/service"
 templates_dir = "tests/data/template"
@@ -97,3 +98,20 @@ class TestTemplating(object):
           return True
     
     assert False
+
+  def test_template_apply_dry_run(self):
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None)
+    se.template("tag", "all", output_dir, local=True, template_filter=["Route"])
+    assert subprocess.call(["oc", "cluster", "up"]) == 0
+    failed = False
+    for root, _, files in os.walk(output_dir):
+      for f in files:
+        if not f.endswith("yaml"):
+          continue
+
+        print(f)
+        if subprocess.call(["oc", "apply", "--dry-run", "-f", os.path.join(root, f)]) == 1:
+          failed = True
+    subprocess.call(["oc", "cluster", "down"])
+    assert not failed
