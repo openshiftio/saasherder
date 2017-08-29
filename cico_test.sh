@@ -3,6 +3,9 @@
 set -xe
 
 yum -y install docker
+
+sed -i "s#OPTIONS='--log-driver=journald'#OPTIONS='--log-driver=journald --insecure-registry 172.30.0.0/16'#" /etc/sysconfig/docker
+
 systemctl start docker
 
 docker build -t saasherder-test -f tests/Dockerfile.test .
