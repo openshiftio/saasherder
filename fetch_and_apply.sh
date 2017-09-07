@@ -39,12 +39,14 @@ function git_prep {
 
 function oc_apply {
     config=""
+    local dryrun_arg=""
     [ -n "${2}" ] && config="--config=${2}"
     if ${DRY_RUN}; then
         echo "oc $config apply -f $1"
-    else
-        oc $config apply -f $1
+        dryrun_arg="--dry-run"
     fi
+
+    oc $config apply ${dryrun_arg} -f $1
 }
 
 function pull_tag {
