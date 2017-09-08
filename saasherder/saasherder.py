@@ -215,7 +215,11 @@ class SaasHerder(object):
       l = self._default_hash_length #How many chars to use from hash
       if s.get("hash_length"):
         l = s.get("hash_length")
-      if s["hash"] == "master":
+
+      if not s["hash"]:
+        logger.warning("Skipping %s" % s["name"])
+        continue
+      elif s["hash"] == "master":
         tag = "latest"
       else:
         tag = s["hash"][:l]
