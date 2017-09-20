@@ -1,11 +1,8 @@
 FROM centos
 
 RUN yum -y install epel-release
-RUN yum -y install python-pip git
+RUN yum -y install python-pip git centos-release-openshift-origin origin-clients
 RUN pip install pytest
-RUN curl -L -O https://github.com/openshift/origin/releases/download/v1.5.1/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz &&\
-    tar xzf openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz &&\
-    cp openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit/oc /usr/bin/oc
 
 WORKDIR /opt/saasherder
 
