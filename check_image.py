@@ -19,8 +19,8 @@ for i in images:
   if len(image_split) == 3:
     registry, repo, name = image_split
   else:
-    registry = "docker.io"
-    repo, name = image_split
+    print("WARNING: Registry for image %s is not set, assuming docker.io. Cannot verify image existance there. Skipping." % i)
+    continue
   image, tag = name.split(":")
   if not registry.startswith("http"):
     registry = "https://%s" % registry
