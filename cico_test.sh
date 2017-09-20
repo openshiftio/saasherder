@@ -5,7 +5,7 @@ set -xe
 setenforce 0
 yum -y install docker
 
-sed -i.bckp "s#\# INSECURE_REGISTRY='--insecure-registry'#INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'#" /etc/sysconfig/docker
+sed -i.bckp '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16"' /etc/sysconfig/docker
 
 iptables -I INPUT -p tcp --dport 80   -j ACCEPT
 iptables -I INPUT -p tcp --dport 443  -j ACCEPT
