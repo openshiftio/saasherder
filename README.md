@@ -17,8 +17,8 @@ Repositories above not only contain references to all OpenShift templates for Op
 3. If the build is successful, image tagged with commit hash is pushed to repository (e.g. `core:abcd12`)
 4. New image is deployed to staging cluster (e.g. `oc process -f openshift/template.yaml IMAGE_TAG=abcd12 | oc apply -f -`)
 5. A developer verifies new deployment in staging cluster and creates a PR, which changes commit hash for the given service, for a tracking repository (e.g. `hash:` is updated in https://github.com/openshiftio/saas-openshiftio/blob/master/dsaas-services/core.yaml)
-6. PR is merged (i.e. this is the **promote-to-prod** manual step)
-7. Once merged, CI job is kicked off, which deploys new version to production (e.g. checkouts a template from git repo for a given commit hash, processes it with `$IMAGE_TAG` and performs `oc apply`)
+6. PR to change the commit hash is merged in the tracking repository (i.e. this is the **promote-to-prod** manual step)
+7. Once the PR merged into the tracking repository, CI job is kicked off, which deploys new version to production (e.g. checkouts a template from git repo for a given commit hash, processes it with `$IMAGE_TAG` and performs `oc apply`)
 
 # Tracking repositories
 ## Service YAML
