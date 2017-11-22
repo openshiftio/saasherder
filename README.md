@@ -157,7 +157,11 @@ daemon to talk to the oc cluster.
 
 NOTE: You might have to additionally enable
 [Insecure Registries](https://wiki.archlinux.org/index.php/Docker#Insecure_registries) on
-your host machine.
+your host machine. You can do this with a single command on Fedora and CentOS.
+
+```
+sed -i.bckp '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16"' /etc/sysconfig/docker
+```
 
 To run tests, simply run
 
