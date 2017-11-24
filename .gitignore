@@ -1,1 +1,4 @@
 *.pyc
+build
+dist
+saasherder.egg-info
