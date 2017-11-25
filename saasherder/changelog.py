@@ -152,7 +152,8 @@ class Changelog:
             self.checkout(service, service['new'])
 
         # Get the changelog for each service as a `(name, [messages])` tuple
-        changelog = [(service['name'], self.log(service, start, end)) for
+        changelog = [(service['name'],
+                      self.log(service, service['old'], service['new'])) for
                      service in changed]
 
         markdown = self.markdown(changelog, start, end)
