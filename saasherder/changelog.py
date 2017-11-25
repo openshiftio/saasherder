@@ -118,29 +118,42 @@ class Changelog:
 
         return self.run(cmd)
 
-    def log(self, service, start, end):
+    def log(self, service, new, old):
         """Get the changelog for one service"""
 
         worktree = self.worktree(service['name'])
-        cmd = "cd {} && git log --oneline {}..{} ".format(worktree, end, start)
+        remote = service['url'].strip('/')
+        template = '[%h](_REMOTE_/commit/%H) %s'
 
-        return self.run(cmd)
+        cmd = ("cd {} && git log --format='{}' {}...{}"
+               .format(worktree, template, new, old))
+
+        return self.run(cmd).replace('_REMOTE_', remote)
 
     @staticmethod
-    def markdown(changelog, start, end):
+    def markdown(changelog, new, old):
         """Pretty print the change log
 
         The incoming object is a list of `(name, messages)` tuples.
         """
 
-        header = "# Changelog \n\n## From version {} to {}".format(start, end)
+        url = "https://github.com/openshiftio/saas-openshiftio"
 
-        body = ["## {} \n{} \n".format(name, messages)
-                for (name, messages) in changelog]
+        # Github's compare view needs the commits in opposite order ?
+        header = ("# [saas-openshift.io]({url}): "
+                  "[{new}..{old}]({url}/compare/{old}...{new}) \n"
+                  .format(url=url, old=old, new=new))
 
-        return header + ''.join(body)
+        body = ["## [{s[name]}]({s[url]}): "
+                "[{s[new]:.7}..{s[old]:.7}]"
+                "({s[url]}/compare/{s[old]}...{s[new]})\n\n"
+                "{messages}"
+                .format(s=service, messages=messages)
+                for (service, messages) in changelog]
 
-    def main(self, context, start, end):
+        return '\n'.join([header] + body)
+
+    def main(self, context, new, old):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -149,28 +162,28 @@ class Changelog:
         logger.info("On branch {} before generating changelog".format(context))
 
         # Checkout to previous version and get services
-        self.run("git checkout {}".format(end))
+        self.run("git checkout {}".format(old))
         previous = self.services(context)
 
-        self.run("git checkout {}".format(start))
+        self.run("git checkout {}".format(new))
         now = self.services(context)
 
         # Go back to where we were
         self.run("git checkout {}".format(branch))
 
-        changed = self.diff(previous, now)
+        changed = self.diff(now, previous)
         logger.info("{} services changed".format(len(changed)))
 
         # Fetch all the services that changed
         for service in changed:
             self.checkout(service, service['new'])
 
-        # Get the changelog for each service as a `(name, [messages])` tuple
-        changelog = [(service['name'],
-                      self.log(service, service['old'], service['new'])) for
-                     service in changed]
+        # Get the changelog for each service as a `(service, [messages])` tuple
+        changelog = [(service,
+                      self.log(service, service['new'], service['old']))
+                     for service in changed]
 
-        markdown = self.markdown(changelog, start, end)
+        markdown = self.markdown(changelog, new, old)
 
         print(markdown)
 
