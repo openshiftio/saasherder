@@ -72,7 +72,8 @@ class Changelog:
     def run(cmd):
         return subprocess.run(cmd, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
-                              shell=True, check=True)
+                              shell=True, check=True) \
+                         .stdout.decode('utf-8')
 
     def worktree(self, service_name):
         """Get git worktree path for a service"""
@@ -113,7 +114,7 @@ class Changelog:
         worktree = self.worktree(service['name'])
         cmd = "cd {} && git log --oneline {}..{} ".format(worktree, end, start)
 
-        return self.run(cmd).stdout.decode('utf-8')
+        return self.run(cmd)
 
     @staticmethod
     def markdown(changelog, start, end):
@@ -131,6 +132,9 @@ class Changelog:
 
     def main(self, context, start, end):
 
+        # Where am I right now?
+        branch = self.run("git symbolic-ref --short HEAD")
+
         # Checkout to previous version and get services
         self.run("git checkout {}".format(end))
         previous = self.services(context)
@@ -139,7 +143,7 @@ class Changelog:
         now = self.services(context)
 
         # Go back to where we were
-        self.run("git checkout master")
+        self.run("git checkout {}".format(branch))
 
         changed = self.diff(previous, now)
 
