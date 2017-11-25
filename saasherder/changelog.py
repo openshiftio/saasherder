@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from itertools import chain
+from subprocess32 import Popen, PIPE
 import logging
 import os
-import subprocess
 import yaml
 
 
@@ -76,10 +78,9 @@ class Changelog:
     @staticmethod
     def run(cmd):
         logger.info("Exec : {}".format(cmd))
-        return subprocess.run(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              shell=True, check=True) \
-                         .stdout.decode('utf-8')
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+        stdout, stderr = p.communicate()
+        return stdout.decode('utf-8')
 
     def worktree(self, service_name):
         """Get git worktree path for a service"""
