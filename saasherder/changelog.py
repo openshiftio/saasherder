@@ -1,7 +1,12 @@
-import yaml
 from itertools import chain
+import logging
 import os
 import subprocess
+import yaml
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class Changelog:
@@ -70,6 +75,7 @@ class Changelog:
 
     @staticmethod
     def run(cmd):
+        logger.info("Exec : {}".format(cmd))
         return subprocess.run(cmd, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               shell=True, check=True) \
@@ -98,9 +104,12 @@ class Changelog:
     def checkout(self, service, version):
         """Get a service checked out at specified version"""
 
-        if os.path.exists(self.worktree(service['name'])):
+        name = service['name']
+        if os.path.exists(self.worktree(name)):
+            logger.info("Found git worktree for {}; updating".format(name))
             self._fetch(service)
         else:
+            logger.info("Cloning git worktree for {}".format(name))
             self._clone(service)
 
         worktree = self.worktree(service['name'])
@@ -132,8 +141,11 @@ class Changelog:
 
     def main(self, context, start, end):
 
+        logger.info("Generating changelog for {}".format(context))
+
         # Where am I right now?
         branch = self.run("git symbolic-ref --short HEAD")
+        logger.info("On branch {} before generating changelog".format(context))
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(end))
@@ -146,6 +158,7 @@ class Changelog:
         self.run("git checkout {}".format(branch))
 
         changed = self.diff(previous, now)
+        logger.info("{} services changed".format(len(changed)))
 
         # Fetch all the services that changed
         for service in changed:
