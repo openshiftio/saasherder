@@ -34,21 +34,21 @@ class SaasHerder(Changelog):
   @property
   def services(self):
     """ Loads and returns all the services in service dir """
-    if not self._services:
-      self._services = {}
-      self._service_files = {}
-      for f in os.listdir(self.services_dir):
-        service_file = os.path.join(self.services_dir, f)
-        service = anymarkup.parse_file(service_file)
-        for s in service["services"]:
-          s["file"] = f
-          self.apply_environment_config(s)
-          self._services[s["name"]] = s
-          if not self._service_files.get(f):
-            self._service_files[f] = []
+
+    _services = {}
+    self._service_files = {}
+    for f in os.listdir(self.services_dir):
+      service_file = os.path.join(self.services_dir, f)
+      service = anymarkup.parse_file(service_file)
+      for s in service["services"]:
+        s["file"] = f
+        self.apply_environment_config(s)
+        _services[s["name"]] = s
+        if not self._service_files.get(f):
+          self._service_files[f] = []
           self._service_files[f].append(s["name"])
 
-    return self._services
+    return _services
 
   def load_from_config(self):
     self.templates_dir = self.config.get("templates_dir")

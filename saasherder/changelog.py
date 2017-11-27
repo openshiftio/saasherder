@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from itertools import chain
 from subprocess32 import Popen, PIPE
 import logging
 import os
-import yaml
 
 
 logging.basicConfig(level=logging.INFO)
@@ -15,37 +13,6 @@ class Changelog(object):
     """A Mixin class to go with SaasHerder"""
 
     workspace = "_workspace/"
-
-    @staticmethod
-    def context_dir(context):
-        return context + "-services/"
-
-    def path(self, context, service_name):
-        """Get YAML config path for a service"""
-
-        return self.context_dir(context) + service_name + ".yaml"
-
-    def definitions(self, context, service_name):
-        """Get list of services defined in service file"""
-
-        with open(self.path(context, service_name)) as f:
-            parsed = yaml.load(f)
-            return parsed['services']
-
-    def service_names(self, context):
-        """Get names of all services in a context"""
-
-        dir = self.context_dir(context)
-        files = os.listdir(dir)
-
-        return [os.path.splitext(f)[0] for f in files]
-
-    def __services(self, context):
-        """Get all services in the context"""
-
-        names = self.service_names(context)
-        dsls = [self.definitions(context, name) for name in names]
-        return list(chain(*dsls))
 
     @staticmethod
     def diff(s1, s2):
@@ -59,10 +26,11 @@ class Changelog(object):
         """
 
         # All the services that changed
-        changed = [service for service in s1 if service not in s2]
+        changed = [s1[service] for service in s1 if s1[service] != s2[service]]
 
         def old(service):
-            cadidates = [s for s in s2 if s['name'] == service['name']]
+            cadidates = [s for s in s2.values()
+                         if s['name'] == service['name']]
             return cadidates[0].get('hash') if cadidates else None
 
         # Filter changed services for which I cannot get a changelog
@@ -158,16 +126,23 @@ class Changelog(object):
 
         logger.info("Generating changelog for {}".format(context))
 
+        # This is :( - using magic mutable state variables instead of
+        # explicitly passing arguments. The number of indirections just makes
+        # reading and understanding code much more painful than necessary.
+        # `self.config["current"]` and `self.config["contexts"]` can be avoided
+        # to make this far simpler.
+        self.config.switch_context(context)
+
         # Where am I right now?
         branch = self.run("git symbolic-ref --short HEAD").strip()
         logger.info("On branch {} before generating changelog".format(branch))
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
-        previous = self.__services(context)
+        previous = self.services
 
         self.run("git checkout {}".format(new))
-        now = self.__services(context)
+        now = self.services
 
         # Go back to where we were
         self.run("git checkout {}".format(branch))
