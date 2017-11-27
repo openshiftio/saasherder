@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class Changelog(object):
-    """A Mixin class to go with SaasHerder"""
 
     workspace = "_workspace/"
 
@@ -43,7 +42,7 @@ class Changelog(object):
         return [{
             'name': service['name'],
             'url': service['url'],
-            'new': service.get('hash', 'master'),  # NOTE: null here is silly
+            'new': service['hash'],
             'old': old(service)
         } for service in useful]
 
