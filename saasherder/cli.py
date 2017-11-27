@@ -82,7 +82,7 @@ def main():
       if args.type == "get-contexts":
         sc.print_contexts()
     elif args.command == "changelog":
-        se.changelog(args.context, args.old, args.new)
+        se.changelog.generate(args.context, args.old, args.new)
 
 if __name__ == "__main__":
   main()

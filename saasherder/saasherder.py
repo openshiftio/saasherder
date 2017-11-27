@@ -14,10 +14,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class SaasHerder(Changelog):
+class SaasHerder(object):
 
   def __init__(self, config_path, context, environment=None):
     self.config = SaasConfig(config_path, context)
+    self.changelog = Changelog(self)
+
     if context:
       self.config.switch_context(context)
 

@@ -14,6 +14,9 @@ class Changelog(object):
 
     workspace = "_workspace/"
 
+    def __init__(self, parent):
+        self.parent = parent
+
     @staticmethod
     def diff(s1, s2):
         """Return the difference between 2 service lists
@@ -126,7 +129,7 @@ class Changelog(object):
 
         return '\n'.join([header] + body)
 
-    def changelog(self, context, new, old):
+    def generate(self, context, new, old):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -135,7 +138,7 @@ class Changelog(object):
         # reading and understanding code much more painful than necessary.
         # `self.config["current"]` and `self.config["contexts"]` can be avoided
         # to make this far simpler.
-        self.config.switch_context(context)
+        self.parent.config.switch_context(context)
 
         # Where am I right now?
         try:
@@ -151,10 +154,10 @@ class Changelog(object):
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
-        previous = self.services
+        previous = self.parent.services
 
         self.run("git checkout {}".format(new))
-        now = self.services
+        now = self.parent.services
 
         # Go back to where we were
         self.run("git checkout {}".format(branch))
