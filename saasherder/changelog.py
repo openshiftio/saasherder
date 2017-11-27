@@ -91,7 +91,7 @@ class Changelog(object):
 
         return self.run(cmd)
 
-    def log(self, service, new, old):
+    def log(self, service, old, new):
         """Get the changelog for one service"""
 
         worktree = self.worktree(service['name'])
@@ -99,7 +99,7 @@ class Changelog(object):
         template = '[%h](_REMOTE_/commit/%H) %s'
 
         cmd = ("cd {} && git log --format='{}' {}...{}"
-               .format(worktree, template, new, old))
+               .format(worktree, template, old, new))
 
         return self.run(cmd).replace('_REMOTE_', remote)
 
@@ -112,7 +112,7 @@ class Changelog(object):
         return self.run(cmd).strip()
 
     @staticmethod
-    def markdown(changelog, new, old):
+    def markdown(changelog, old, new):
         """Pretty print the change log
 
         The incoming object is a list of `(name, timestamp, messages)` tuples.
@@ -120,13 +120,12 @@ class Changelog(object):
 
         url = "https://github.com/openshiftio/saas-openshiftio"
 
-        # Github's compare view needs the commits in opposite order ?
         header = ("# [saas-openshift.io]({url}): "
-                  "[{new}..{old}]({url}/compare/{old}...{new}) \n"
+                  "[{old}..{new}]({url}/compare/{old}...{new}) \n"
                   .format(url=url, old=old, new=new))
 
         body = ["## [{s[name]}]({s[url]}): "
-                "[{s[new]:.7}..{s[old]:.7}]"
+                "[{s[old]:.7}..{s[new]:.7}]"
                 "({s[url]}/compare/{s[old]}...{s[new]})\n"
                 "Last updated at {timestamp} \n\n"
                 "{messages}"
@@ -135,7 +134,7 @@ class Changelog(object):
 
         return '\n'.join([header] + body)
 
-    def generate(self, context, new, old):
+    def generate(self, context, old, new):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -178,10 +177,10 @@ class Changelog(object):
         # Changelog for each service as `(service, timestamp, messages)` tuple
         changelog = [(service,
                       self.last_changed(service, service['new']),
-                      self.log(service, service['new'], service['old']))
+                      self.log(service, service['old'], service['new']))
                      for service in changed]
 
-        markdown = self.markdown(changelog, new, old)
+        markdown = self.markdown(changelog, old, new)
 
         print(markdown)
 

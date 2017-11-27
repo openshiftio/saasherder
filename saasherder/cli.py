@@ -60,8 +60,8 @@ def main():
 
     subparser_changelog = subparsers.add_parser("changelog")
     subparser_changelog.add_argument("--context", action="store")
-    subparser_changelog.add_argument("new", action="store")
     subparser_changelog.add_argument("old", action="store")
+    subparser_changelog.add_argument("new", action="store")
 
     args = parser.parse_args()
 
@@ -82,7 +82,7 @@ def main():
       if args.type == "get-contexts":
         sc.print_contexts()
     elif args.command == "changelog":
-        se.changelog.generate(args.context, args.new, args.old)
+        se.changelog.generate(args.context, args.old, args.new)
 
 if __name__ == "__main__":
   main()
