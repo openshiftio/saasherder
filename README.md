@@ -152,22 +152,27 @@ This snippet will ensure your new service will skip deployment to production, bu
 
 ## Test
 
-There are couple tests for SaaS Herder. To run them, you can use included `tests/Dockerfile.test`
+SaaS Herder tests are run in an isolated container, but talks to the host docker
+daemon to talk to the oc cluster.
+
+NOTE: You might have to additionally enable
+[Insecure Registries](https://wiki.archlinux.org/index.php/Docker#Insecure_registries) on
+your host machine. You can do this with a single command on Fedora and CentOS.
 
 ```
-docker build -t saasherder-test -f tests/Dockerfile.test .
+sed -i.bckp '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16"' /etc/sysconfig/docker
 ```
 
-To run tests, simply run container
+To run tests, simply run
 
 ```
-docker run -it --rm saasherder-test
+make test
 ```
 
 If you make changes to code or tests, you can check them in the container without rebuild
 
 ```
-docker run -it --rm -v $PWD/tests:/opt/saasherder/tests -v $PWD/saasherder:/opt/saasherder/saasherder saasherder-test
+make local-test
 ```
 
 ## dsaas-tracking-services
