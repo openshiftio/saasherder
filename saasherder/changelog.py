@@ -17,7 +17,7 @@ class Changelog(object):
         self.parent = parent
 
     @staticmethod
-    def diff(s1, s2):
+    def diff(now, previous):
         """Return the difference between 2 service lists
 
         This is not a commutative relationship. We are looking for services in
@@ -28,12 +28,10 @@ class Changelog(object):
         """
 
         # All the services that changed
-        changed = [s1[service] for service in s1 if s1[service] != s2[service]]
+        changed = [now[s] for s in now if now[s] != previous[s]]
 
         def old(service):
-            cadidates = [s for s in s2.values()
-                         if s['name'] == service['name']]
-            return cadidates[0].get('hash') if cadidates else None
+            return previous.get(service['name'], {}).get('hash')
 
         # Filter changed services for which I cannot get a changelog
         useful = [s for s in changed if s.get('hash') and old(s)]
@@ -105,11 +103,19 @@ class Changelog(object):
 
         return self.run(cmd).replace('_REMOTE_', remote)
 
+    def last_changed(self, service, commit):
+        """Get the commit time for service at specific commit"""
+
+        worktree = self.worktree(service['name'])
+        cmd = "cd {} && git log -1 --format=%cd {}".format(worktree, commit)
+
+        return self.run(cmd).strip()
+
     @staticmethod
     def markdown(changelog, new, old):
         """Pretty print the change log
 
-        The incoming object is a list of `(name, messages)` tuples.
+        The incoming object is a list of `(name, timestamp, messages)` tuples.
         """
 
         url = "https://github.com/openshiftio/saas-openshiftio"
@@ -121,10 +127,11 @@ class Changelog(object):
 
         body = ["## [{s[name]}]({s[url]}): "
                 "[{s[new]:.7}..{s[old]:.7}]"
-                "({s[url]}/compare/{s[old]}...{s[new]})\n\n"
+                "({s[url]}/compare/{s[old]}...{s[new]})\n"
+                "Last updated at {timestamp} \n\n"
                 "{messages}"
-                .format(s=service, messages=messages)
-                for (service, messages) in changelog]
+                .format(s=service, timestamp=timestamp, messages=messages)
+                for (service, timestamp, messages) in changelog]
 
         return '\n'.join([header] + body)
 
@@ -168,8 +175,9 @@ class Changelog(object):
         for service in changed:
             self.checkout(service, service['new'])
 
-        # Get the changelog for each service as a `(service, [messages])` tuple
+        # Changelog for each service as `(service, timestamp, messages)` tuple
         changelog = [(service,
+                      self.last_changed(service, service['new']),
                       self.log(service, service['new'], service['old']))
                      for service in changed]
 
