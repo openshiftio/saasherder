@@ -100,6 +100,8 @@ class TestTemplating(object):
     assert False
 
   def test_template_apply_dry_run(self):
+    if os.getenv("SKIP_OC", False):
+      return
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
     se.template("tag", "all", output_dir, local=True, template_filter=["Route"])
