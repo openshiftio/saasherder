@@ -7,6 +7,7 @@ import subprocess
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
+from changelog import Changelog
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -14,27 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class SaasHerder(object):
-  @property
-  def services(self):
-    """ Loads and returns all the services in service dir """
-    if not self._services:
-      self._services = {}
-      self._service_files = {}
-      for f in os.listdir(self.services_dir):
-        service_file = os.path.join(self.services_dir, f)
-        service = anymarkup.parse_file(service_file)
-        for s in service["services"]:
-          s["file"] = f
-          self.apply_environment_config(s)
-          self._services[s["name"]] = s
-          if not self._service_files.get(f):
-            self._service_files[f] = []
-          self._service_files[f].append(s["name"])
-
-    return self._services
 
   def __init__(self, config_path, context, environment=None):
     self.config = SaasConfig(config_path, context)
+    self.changelog = Changelog(self)
+
     if context:
       self.config.switch_context(context)
 
@@ -44,6 +29,28 @@ class SaasHerder(object):
     self._services = None
     self._environment = None if environment == "None" else environment
     self.load_from_config()
+
+  # TODO: This function should take context or "all" as an argument instead of the
+  # hidden the implicit state. Zen of Python says "Explicit is better than
+  # implicit."
+  @property
+  def services(self):
+    """ Loads and returns all the services in service dir """
+
+    _services = {}
+    self._service_files = {}
+    for f in os.listdir(self.services_dir):
+      service_file = os.path.join(self.services_dir, f)
+      service = anymarkup.parse_file(service_file)
+      for s in service["services"]:
+        s["file"] = f
+        self.apply_environment_config(s)
+        _services[s["name"]] = s
+        if not self._service_files.get(f):
+          self._service_files[f] = []
+          self._service_files[f].append(s["name"])
+
+    return _services
 
   def load_from_config(self):
     self.templates_dir = self.config.get("templates_dir")
