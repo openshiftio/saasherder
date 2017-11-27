@@ -158,8 +158,8 @@ class Changelog:
         logger.info("Generating changelog for {}".format(context))
 
         # Where am I right now?
-        branch = self.run("git symbolic-ref --short HEAD")
-        logger.info("On branch {} before generating changelog".format(context))
+        branch = self.run("git symbolic-ref --short HEAD").strip()
+        logger.info("On branch {} before generating changelog".format(branch))
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
