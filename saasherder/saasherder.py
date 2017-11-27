@@ -15,6 +15,22 @@ logger = logging.getLogger(__name__)
 
 
 class SaasHerder(Changelog):
+
+  def __init__(self, config_path, context, environment=None):
+    self.config = SaasConfig(config_path, context)
+    if context:
+      self.config.switch_context(context)
+
+    logger.info("Current context: %s" % self.config.current())
+
+    self._default_hash_length = 6
+    self._services = None
+    self._environment = None if environment == "None" else environment
+    self.load_from_config()
+
+  # TODO: This function should take context or "all" as an argument instead of the
+  # hidden the implicit state. Zen of Python says "Explicit is better than
+  # implicit."
   @property
   def services(self):
     """ Loads and returns all the services in service dir """
@@ -33,18 +49,6 @@ class SaasHerder(Changelog):
           self._service_files[f].append(s["name"])
 
     return self._services
-
-  def __init__(self, config_path, context, environment=None):
-    self.config = SaasConfig(config_path, context)
-    if context:
-      self.config.switch_context(context)
-
-    logger.info("Current context: %s" % self.config.current())
-
-    self._default_hash_length = 6
-    self._services = None
-    self._environment = None if environment == "None" else environment
-    self.load_from_config()
 
   def load_from_config(self):
     self.templates_dir = self.config.get("templates_dir")
