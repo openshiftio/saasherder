@@ -159,10 +159,10 @@ class Changelog(object):
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
-        previous = self.parent.services
+        previous, _ = self.parent.load_services()
 
         self.run("git checkout {}".format(new))
-        now = self.parent.services
+        now, _ = self.parent.load_services()
 
         # Go back to where we were
         self.run("git checkout {}".format(branch))

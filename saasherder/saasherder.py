@@ -36,9 +36,13 @@ class SaasHerder(object):
   @property
   def services(self):
     """ Loads and returns all the services in service dir """
+    if not self._services:
+      self._services, self._service_files = self.load_services()    
+    return self._services
 
+  def load_services(self):
     _services = {}
-    self._service_files = {}
+    _service_files = {}
     for f in os.listdir(self.services_dir):
       service_file = os.path.join(self.services_dir, f)
       service = anymarkup.parse_file(service_file)
@@ -46,11 +50,11 @@ class SaasHerder(object):
         s["file"] = f
         self.apply_environment_config(s)
         _services[s["name"]] = s
-        if not self._service_files.get(f):
-          self._service_files[f] = []
-          self._service_files[f].append(s["name"])
+        if not _service_files.get(f):
+          _service_files[f] = []
+        _service_files[f].append(s["name"])
 
-    return _services
+    return _services, _service_files
 
   def load_from_config(self):
     self.templates_dir = self.config.get("templates_dir")
@@ -165,7 +169,7 @@ class SaasHerder(object):
 
     return result
 
-  def collect_services(self, services, token=None, dry_run=False):
+  def collect_services(self, services, token=None, dry_run=False, fail_on_error=False):
     """ Pull/download templates from repositories """
     service_list = self.get_services(services)
     for s in service_list:
@@ -175,6 +179,8 @@ class SaasHerder(object):
       except Exception as e:
         logger.error(e)
         logger.warning("Skipping %s" % s.get("name"))
+        if fail_on_error:
+          raise
         continue
       logger.info("Downloading: %s" % self.get_raw(s))
       headers={}
@@ -199,7 +205,7 @@ class SaasHerder(object):
       services[0][cmd_type] = value
 
     try:
-      self.collect_services([service], dry_run=True)
+      self.collect_services([service], dry_run=True, fail_on_error=True)
     except Exception as e:
       logger.error("Aborting update: %s" % e)
       return  
