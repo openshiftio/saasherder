@@ -46,9 +46,13 @@ class Changelog(object):
 
     @staticmethod
     def run(cmd):
-        logger.info("Exec : {}".format(cmd))
+        logger.info("$ {}".format(cmd))
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
         stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            raise Exception("$ {} FAILED with exit code {}"
+                            .format(cmd, p.returncode))
+
         return stdout.decode('utf-8')
 
     def worktree(self, service_name):
@@ -134,8 +138,16 @@ class Changelog(object):
         self.config.switch_context(context)
 
         # Where am I right now?
-        branch = self.run("git symbolic-ref --short HEAD").strip()
-        logger.info("On branch {} before generating changelog".format(branch))
+        try:
+            # This will fail for detached HEAD
+            branch = self.run("git symbolic-ref --short HEAD").strip()
+            logger.info("On branch {} before generating changelog"
+                        .format(branch))
+
+        except Exception:
+            branch = self.run("git rev-parse --short HEAD").strip()
+            logger.info("HEAD at {} before generating changelog"
+                        .format(branch))
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
