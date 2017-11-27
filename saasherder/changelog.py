@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class Changelog:
+class Changelog(object):
+    """A Mixin class to go with SaasHerder"""
 
     workspace = "_workspace/"
 
@@ -39,7 +40,7 @@ class Changelog:
 
         return [os.path.splitext(f)[0] for f in files]
 
-    def services(self, context):
+    def __services(self, context):
         """Get all services in the context"""
 
         names = self.service_names(context)
@@ -153,7 +154,7 @@ class Changelog:
 
         return '\n'.join([header] + body)
 
-    def main(self, context, new, old):
+    def changelog(self, context, new, old):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -163,10 +164,10 @@ class Changelog:
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
-        previous = self.services(context)
+        previous = self.__services(context)
 
         self.run("git checkout {}".format(new))
-        now = self.services(context)
+        now = self.__services(context)
 
         # Go back to where we were
         self.run("git checkout {}".format(branch))

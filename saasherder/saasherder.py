@@ -7,13 +7,14 @@ import subprocess
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
+from changelog import Changelog
 
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class SaasHerder(object):
+class SaasHerder(Changelog):
   @property
   def services(self):
     """ Loads and returns all the services in service dir """
