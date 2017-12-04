@@ -67,7 +67,7 @@ class TestTemplating(object):
     environment = "url"
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None, environment)
-    assert se.get_services("redirector")[0]["url"] != "some_url"
+    assert se.get_services("redirector")[0]["url"] == "some_url"
 
   def test_template_environment_no_parameters(self):
     environment = "no_params"
