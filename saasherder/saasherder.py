@@ -74,8 +74,7 @@ class SaasHerder(object):
           if key == "name":
             continue
           if key == "url":
-            logger.error("You cannot change URL for an environment.")
-            continue
+            logger.warning("You are changing URL for environment %s.", env["name"])
           if key == "hash":
             logger.error("You cannot change hash for an environment")
 
