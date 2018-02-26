@@ -7,6 +7,7 @@ Services and their deployment templates are tracked in other repositories. OpenS
 * https://github.com/openshiftio/saas-openshiftio
 * https://github.com/openshiftio/saas-analytics
 * https://github.com/openshiftio/saas-launchpad
+* https://github.com/openshiftio/saas-chat
 
 # The Process
 
