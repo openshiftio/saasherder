@@ -5,6 +5,7 @@ from dateutil.parser import parse
 
 import logging
 import os
+import re
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -122,7 +123,7 @@ class Changelog(object):
         return self.run(cmd).strip()
 
     @staticmethod
-    def markdown(changelog, old, new):
+    def markdown(changelog, old, new, context_url):
         """Pretty print the change log
 
         The incoming object is a list of `(name, timestamp, messages)` tuples.
@@ -144,9 +145,12 @@ class Changelog(object):
             else:
                 dedup_changelog[url]['name'].append(name)
 
-        body = []
-        for c in dedup_changelog.values():
+        # Build the body
+        context_url = re.sub("\.git$", "", context_url.strip())
+        header = "Context changes: [{old}..{new}]({url}/compare/{old}...{new})\n\n".format(url=context_url, old=old, new=new)
 
+        body = [header]
+        for c in dedup_changelog.values():
             msg = ("**[{name}]({s[url]})**:\n\n"
                    "Changes: [{s[old]:.7}..{s[new]:.7}]"
                    "({s[url]}compare/{s[old]}...{s[new]})\n\n"
@@ -212,7 +216,6 @@ class Changelog(object):
             self.checkout(service)
 
         # Changelog for each service as `(service, timestamp, messages)` tuple
-
         changelog = []
         for service in changed:
             changelog.append((
@@ -221,7 +224,9 @@ class Changelog(object):
                 self.log(service, service['old'], service['new'])
             ))
 
-        markdown = self.markdown(changelog, old, new)
+        url = self.run("git remote get-url origin")
+
+        markdown = self.markdown(changelog, old, new, url)
 
         print(markdown)
 
