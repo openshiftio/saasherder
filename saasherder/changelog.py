@@ -6,6 +6,7 @@ from dateutil.parser import parse
 import logging
 import os
 import re
+import textwrap
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -147,17 +148,32 @@ class Changelog(object):
 
         # Build the body
         context_url = re.sub("\.git$", "", context_url.strip())
-        header = "Context changes: [{old}..{new}]({url}/compare/{old}...{new})\n\n".format(url=context_url, old=old, new=new)
+
+        header = "Context changes: [{old:.7}..{new}]({url}/compare/{old}...{new})\n\n"
+        header = header.format(url=context_url, old=old, new=new)
 
         body = [header]
-        for c in dedup_changelog.values():
-            msg = ("**[{name}]({s[url]})**:\n\n"
-                   "Changes: [{s[old]:.7}..{s[new]:.7}]"
-                   "({s[url]}compare/{s[old]}...{s[new]})\n\n"
-                   "Last updated at {t}\n\n"
-                   "{m}".format(name=(", ".join(c['name'])), s=c['service'], t=c['timestamp'], m=c['messages']))
 
-            body.append(msg)
+        for entry in dedup_changelog.values():
+            name = ", ".join(entry['name'])
+            url = re.sub("/$", "", entry['service']['url'])
+
+            section = """\
+                      **[{name}]({url})**
+
+                      Changes: [{old:.7}..{new:.7}]({url}/compare/{old}...{new})
+
+                      Last updated at {entry[timestamp]}
+
+                      {entry[messages]}"""
+
+            section = textwrap.dedent(section)
+            section = section.format(name=name,
+                                     entry=entry,
+                                     old=entry['service']['old'],
+                                     new=entry['service']['new'],
+                                     url=url)
+            body.append(section)
 
         return '\n'.join(body)
 
