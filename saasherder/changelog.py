@@ -106,7 +106,7 @@ class Changelog(object):
 
         worktree = self.worktree(service['name'])
         remote = service['url'].strip('/')
-        template = '[%h](_REMOTE_/commit/%H) %s'
+        template = '- [%h](_REMOTE_/commit/%H) %s'
 
         cmd = ("cd {} && git log --format='{}' {}...{}"
                .format(worktree, template, old, new))
@@ -128,21 +128,34 @@ class Changelog(object):
         The incoming object is a list of `(name, timestamp, messages)` tuples.
         """
 
-        url = "https://github.com/openshiftio/saas-openshiftio"
+        # Some services may come from the same URL, in this case let's
+        # deduplicate them
+        dedup_changelog = {}
+        for service, timestamp, messages in changelog:
+            url = service['url']
+            name = service.pop('name', None)
+            if url not in dedup_changelog:
+                dedup_changelog[url] = dict(
+                    name=[name],
+                    service=service,
+                    timestamp=timestamp,
+                    messages=messages
+                )
+            else:
+                dedup_changelog[url]['name'].append(name)
 
-        header = ("# [saas-openshift.io]({url}): "
-                  "[{old}..{new}]({url}/compare/{old}...{new}) \n"
-                  .format(url=url, old=old, new=new))
+        body = []
+        for c in dedup_changelog.values():
 
-        body = ["## [{s[name]}]({s[url]}): "
-                "[{s[old]:.7}..{s[new]:.7}]"
-                "({s[url]}/compare/{s[old]}...{s[new]})\n"
-                "Last updated at {timestamp} \n\n"
-                "{messages}"
-                .format(s=service, timestamp=timestamp, messages=messages)
-                for (service, timestamp, messages) in changelog]
+            msg = ("**[{name}]({s[url]})**:\n\n"
+                   "Changes: [{s[old]:.7}..{s[new]:.7}]"
+                   "({s[url]}compare/{s[old]}...{s[new]})\n\n"
+                   "Last updated at {t}\n\n"
+                   "{m}".format(name=(", ".join(c['name'])), s=c['service'], t=c['timestamp'], m=c['messages']))
 
-        return '\n'.join([header] + body)
+            body.append(msg)
+
+        return '\n'.join(body)
 
     def generate(self, context, old, new):
 
@@ -199,10 +212,14 @@ class Changelog(object):
             self.checkout(service)
 
         # Changelog for each service as `(service, timestamp, messages)` tuple
-        changelog = [(service,
-                      self.last_changed(service, service['new']),
-                      self.log(service, service['old'], service['new']))
-                     for service in changed]
+
+        changelog = []
+        for service in changed:
+            changelog.append((
+                service,
+                self.last_changed(service, service['new']),
+                self.log(service, service['old'], service['new'])
+            ))
 
         markdown = self.markdown(changelog, old, new)
 
