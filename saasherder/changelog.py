@@ -27,22 +27,30 @@ class Changelog(object):
         services for now.
         """
 
-        # All the services that changed
-        changed = [now[s] for s in now if now[s] != previous[s]]
+        # All the services that changed. We will store only those that exist in
+        # now and in previous, for which 'hash' is defined in both
+        changed = []
+        for service_name, service in now.items():
+            try:
+                prev_service = previous[service_name]
+                service_hash = service['hash']
+                prev_service_hash = prev_service['hash']
+            except KeyError:
+                # Skip if prev_service is not found
+                # or if 'hash' is not defined for either service
+                continue
 
-        def old(service):
-            return previous.get(service['name'], {}).get('hash')
+            if prev_service_hash != service_hash:
+                changed.append(
+                    dict(
+                        name=service['name'],
+                        url=service['url'],
+                        new=service_hash,
+                        old=prev_service_hash
+                    )
+                )
 
-        # Filter changed services for which I cannot get a changelog
-        useful = [s for s in changed if s.get('hash') and old(s)]
-
-        # Now changed services can be new ones or change in hash
-        return [{
-            'name': service['name'],
-            'url': service['url'],
-            'new': service['hash'],
-            'old': old(service)
-        } for service in useful]
+        return changed
 
     @staticmethod
     def run(cmd):
