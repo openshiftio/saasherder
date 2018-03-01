@@ -44,7 +44,7 @@ def main():
     subparser_template.add_argument("type", choices=["tag"],
                                     help="Update image tag with commit hash")
     subparser_template.add_argument("services", nargs="*", default="all",
-                                    help="Service which template should be updated")      
+                                    help="Service which template should be updated")
 
     subparser_template = subparsers.add_parser("get")
     #subparser_template.add_argument('--all', default=False, action='store_true',
@@ -60,8 +60,8 @@ def main():
 
     subparser_changelog = subparsers.add_parser("changelog")
     subparser_changelog.add_argument("--context", action="store")
-    subparser_changelog.add_argument("old", action="store")
-    subparser_changelog.add_argument("new", action="store")
+    subparser_changelog.add_argument("old", action="store", help="Commit or a date (parsed by dateutil.parser)")
+    subparser_changelog.add_argument("new", action="store", help="Commit or a date (parsed by dateutil.parser)")
 
     args = parser.parse_args()
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import Popen, PIPE
+from dateutil.parser import parse
 import logging
 import os
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -164,6 +164,20 @@ class Changelog(object):
             branch = self.run("git rev-parse --short HEAD").strip()
             logger.info("HEAD at {} before generating changelog"
                         .format(branch))
+
+        # Resolve commit if a date was passed in 'old'
+        try:
+            dt_old = parse(old)
+            old = self.run("git rev-list -1 --before='{}' {}".format(dt_old, branch)).strip()
+        except:
+            pass
+
+        # Resolve commit if a date was passed in 'new'
+        try:
+            dt_new = parse(new)
+            new = self.run("git rev-list -1 --before='{}' {}".format(dt_new, branch)).strip()
+        except:
+            pass
 
         # Checkout to previous version and get services
         self.run("git checkout {}".format(old))
