@@ -28,11 +28,27 @@ class ChangelogRender(object):
         self.url = url
 
     def markdown(self):
+        header_template = "Context changes: [{old:.7}..{new}]({url}/compare/{old}...{new})\n\n"
+
+        section_template = textwrap.dedent("""\
+                           **[{names}]({url})**
+
+                           Changes: [{old:.7}..{new:.7}]({url}/compare/{old}...{new})
+
+                           Last updated at {last_changed}
+
+                           {log}""")
+
+        commit_template =  '- [%h]({url}/commit/%H) %s'
+
+
+        return self.render(header_template, section_template, commit_template)
+
+    def render(self, header_template, section_template, commit_template):
         """Pretty print the change log"""
 
         # Build the body
-        header = "Context changes: [{old:.7}..{new}]({url}/compare/{old}...{new})\n\n"
-        header = header.format(url=self.url, old=self.old, new=self.new)
+        header = header_template.format(url=self.url, old=self.old, new=self.new)
 
         body = [header]
 
@@ -40,31 +56,21 @@ class ChangelogRender(object):
             names = ", ".join(service['names'])
             url = service['url']
 
-            section = """\
-                      **[{names}]({url})**
-
-                      Changes: [{old:.7}..{new:.7}]({url}/compare/{old}...{new})
-
-                      Last updated at {last_changed}
-
-                      {log}"""
-
-            section = textwrap.dedent(section)
-
-            section = section.format(names=names,
-                                     url=url,
-                                     old=service['old'],
-                                     new=service['new'],
-                                     log=self.log(service),
-                                     last_changed=self.last_changed(service))
+            section = section_template.format(names=names,
+                                              url=url,
+                                              old=service['old'],
+                                              new=service['new'],
+                                              log=self.log(service, commit_template),
+                                              last_changed=self.last_changed(service))
             body.append(section)
 
         return '\n'.join(body)
 
-    def log(self, service):
+    def log(self, service, commit_template):
         """Get the changelog for one service"""
-        template = '- [%h]({}/commit/%H) %s'.format(service['url'])
-        return self.changelog.service_run(service, "git log --format='{}' {}...{}".format(template, service['old'], service['new']))
+        template = commit_template.format(url=service['url'])
+        git_log_cmd = "git log --format='{}' {}...{}".format(template, service['old'], service['new'])
+        return self.changelog.service_run(service, git_log_cmd)
 
     def last_changed(self, service):
         """Get the commit time for service at specific commit"""
