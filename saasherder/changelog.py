@@ -2,12 +2,12 @@
 
 from subprocess import Popen, PIPE
 from dateutil.parser import parse
+
 import logging
 import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class Changelog(object):
 
@@ -83,10 +83,12 @@ class Changelog(object):
 
         return self.run(cmd)
 
-    def checkout(self, service, version):
+    def checkout(self, service):
         """Get a service checked out at specified version"""
 
         name = service['name']
+        version = service['new']
+
         if os.path.exists(self.worktree(name)):
             logger.info("Found git worktree for {}; updating".format(name))
             self._fetch(service)
@@ -194,7 +196,7 @@ class Changelog(object):
 
         # Fetch all the services that changed
         for service in changed:
-            self.checkout(service, service['new'])
+            self.checkout(service)
 
         # Changelog for each service as `(service, timestamp, messages)` tuple
         changelog = [(service,
