@@ -41,7 +41,7 @@ class Changelog(object):
                 # or if 'hash' is not defined for either service
                 continue
 
-            if prev_service_hash != service_hash:
+            if service_hash and prev_service_hash and prev_service_hash != service_hash:
                 changed.append(
                     dict(
                         name=service['name'],
