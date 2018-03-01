@@ -27,6 +27,23 @@ class ChangelogRender(object):
         self.new = new
         self.url = url
 
+    def plain(self):
+        header_template = "Context changes: {old:.7}..{new} ({url}/compare/{old}...{new})\n\n"
+
+        section_template = textwrap.dedent("""\
+                           ## {names} ({url})
+
+                           Changes: {old:.7}..{new:.7} ({url}/compare/{old}...{new})
+
+                           Last updated at {last_changed}
+
+                           {log}""")
+
+        commit_template =  '- %s\n  {url}/commit/%H'
+
+
+        return self.render(header_template, section_template, commit_template)
+
     def markdown(self):
         header_template = "Context changes: [{old:.7}..{new}]({url}/compare/{old}...{new})\n\n"
 
@@ -160,7 +177,7 @@ class Changelog(object):
 
         return self.service_run(service, "git checkout {}".format(service['new']))
 
-    def generate(self, context, old, new):
+    def generate(self, context, old, new, format):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -213,13 +230,15 @@ class Changelog(object):
 
         # Fetch all the services that changed
         for service in self.changed_services:
-            # only need to checkout the first
             self.checkout(service)
 
         url = run("git remote get-url origin").rstrip("/").rstrip(".git")
 
         render = ChangelogRender(self, old, new, url)
 
-        print render.markdown()
+        if format == "markdown":
+            print render.markdown()
+        elif format == "plain":
+            print render.plain()
 
         return 0
