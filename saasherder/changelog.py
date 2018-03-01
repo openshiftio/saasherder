@@ -28,31 +28,33 @@ class ChangelogRender(object):
         self.url = url
 
     def plain(self):
-        header_template = "Context changes: {old:.7}..{new} ({url}/compare/{old}...{new})\n\n"
+        header_template = "Context changes: {old:.8}..{new}\n{url}/compare/{old:.8}...{new}\n"
 
         section_template = textwrap.dedent("""\
-                           ## {names} ({url})
+                           ### {name}
 
-                           Changes: {old:.7}..{new:.7} ({url}/compare/{old}...{new})
+                           Url: {url}
 
-                           Last updated at {last_changed}
+                           List of services with this url:
+                           {names_list}
 
+                           Changes: {old:.8}..{new:.8} (Last updated at {last_changed})
+                           {url}/compare/{old:.8}...{new:.8}
+
+                           Commits:
                            {log}""")
 
-        commit_template =  '- %s\n  {url}/commit/%H'
-
+        commit_template =  '- %s\n  {url}/commit/%h'
 
         return self.render(header_template, section_template, commit_template)
 
     def markdown(self):
-        header_template = "Context changes: [{old:.7}..{new}]({url}/compare/{old}...{new})\n\n"
+        header_template = "Context changes: [{old:.8}..{new}]({url}/compare/{old}...{new})\n\n"
 
         section_template = textwrap.dedent("""\
                            **[{names}]({url})**
 
-                           Changes: [{old:.7}..{new:.7}]({url}/compare/{old}...{new})
-
-                           Last updated at {last_changed}
+                           Changes: [{old:.8}..{new:.8}]({url}/compare/{old}...{new}) (Last updated at {last_changed})
 
                            {log}""")
 
@@ -70,10 +72,11 @@ class ChangelogRender(object):
         body = [header]
 
         for service in self.changelog.changed_services:
-            names = ", ".join(service['names'])
+            names_list = "\n".join(["- {}".format(n) for n in service['names']])
             url = service['url']
 
-            section = section_template.format(names=names,
+            section = section_template.format(name=service['name'],
+                                              names_list=names_list,
                                               url=url,
                                               old=service['old'],
                                               new=service['new'],
@@ -232,7 +235,7 @@ class Changelog(object):
         for service in self.changed_services:
             self.checkout(service)
 
-        url = run("git remote get-url origin").rstrip("/").rstrip(".git")
+        url = run("git remote get-url origin").strip().rstrip("/").rstrip(".git")
 
         render = ChangelogRender(self, old, new, url)
 
