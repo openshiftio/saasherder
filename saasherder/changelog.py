@@ -103,8 +103,7 @@ class Changelog(object):
     def __init__(self, parent):
         self.parent = parent
 
-        # Key: url of the service
-        # Value: list of services that have changed
+        # list of changed services
         self.changed_services = []
 
     def fetch_diff(self, now, previous):
@@ -117,9 +116,11 @@ class Changelog(object):
         services for now.
         """
 
-        # All the services that changed. We will store only those that exist in
-        # now and in previous, for which 'hash' is defined in both
-        changed_services = {}
+        # Keep list of services stored by url. Services may have the same
+        # project url, we want to group them together. We will extract the
+        # values of this dictionary and store it in self.changed_services.
+        changed_services_by_url = {}
+
         for service_name, service in now.items():
             try:
                 prev_service = previous[service_name]
@@ -130,14 +131,15 @@ class Changelog(object):
                 # or if 'hash' is not defined for either service
                 continue
 
+            # Hash may defined to None, in which case we need to skip
             if service_hash is None or prev_service_hash is None:
                 continue
 
             url = service['url'].rstrip('/')
 
             if prev_service_hash != service_hash:
-                if url in changed_services:
-                    changed_services[url]['names'].append(service_name)
+                if url in changed_services_by_url:
+                    changed_services_by_url[url]['names'].append(service_name)
                 else:
                     diff_item = dict(name=service_name,
                                      names=[service_name],
@@ -145,10 +147,9 @@ class Changelog(object):
                                      new=service_hash,
                                      old=prev_service_hash)
 
-                    changed_services[url] = diff_item
+                    changed_services_by_url[url] = diff_item
 
-        self.changed_services = changed_services.values()
-        return self.changed_services
+        self.changed_services = changed_services_by_url.values()
 
     def worktree(self, service):
         """Get git worktree path for a service"""
@@ -180,6 +181,26 @@ class Changelog(object):
 
         return self.service_run(service, "git checkout {}".format(service['new']))
 
+
+    def convert_date_to_commit(self, branch, date_or_commit):
+        """
+        Returns a commit.
+
+        It can be called with either a date or a commit (or branch):
+        - date: return the first commit before this date in 'branch'
+        - else: return as is
+        """
+
+        # Try to dateparse the commit
+        try:
+            date = parse(date_or_commit)
+        except ValueError:
+            # Return the date_or_commit object as is: it's not in date format
+            return date_or_commit
+
+        # Get the first commit before the date
+        return run("git rev-list -1 --before='{}' {}".format(date, branch)).strip()
+
     def generate(self, context, old, new, format):
 
         logger.info("Generating changelog for {}".format(context))
@@ -203,19 +224,9 @@ class Changelog(object):
             logger.info("HEAD at {} before generating changelog"
                         .format(branch))
 
-        # Resolve commit if a date was passed in 'old'
-        try:
-            dt_old = parse(old)
-            old = run("git rev-list -1 --before='{}' {}".format(dt_old, branch)).strip()
-        except:
-            pass
-
-        # Resolve commit if a date was passed in 'new'
-        try:
-            dt_new = parse(new)
-            new = run("git rev-list -1 --before='{}' {}".format(dt_new, branch)).strip()
-        except:
-            pass
+        # Convert 'old' and 'new' to commits if they are dates
+        old = self.convert_date_to_commit(branch, old)
+        new = self.convert_date_to_commit(branch, new)
 
         # Checkout to previous version and get services
         run("git checkout {}".format(old))
