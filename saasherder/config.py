@@ -31,13 +31,13 @@ class SaasConfig(object):
 
   def add_context(self, name, services_dir, templates_dir, output_dir):
     c = self.context_exists(name)
-    
+
     if c:
       logger.info("Context %s exists, updating." % name)
       context = c
     else:
       context = {}
-    
+
     context["name"] = name
     context["data"] = {}
     context["data"]["services_dir"] = services_dir
@@ -70,11 +70,8 @@ class SaasConfig(object):
       raise Exception("Context %s, set as 'current', does not exist" % self.current())
 
     return context["data"][key]
-  
+
   def get_contexts(self):
     for c in self.config["contexts"]:
       yield c["name"]
 
-  def print_contexts(self):
-    for c in self.get_contexts():
-      print(c)
