@@ -21,7 +21,7 @@ def run(cmd):
     return stdout.decode('utf-8')
 
 class ChangelogRender(object):
-    def __init__(self, changelog, old, new, url):
+    def __init__(self, changelog, old, new, url=None):
         self.changelog = changelog
         self.old = old
         self.new = new
@@ -246,7 +246,7 @@ class Changelog(object):
         for service in self.changed_services:
             self.checkout(service)
 
-        url = run("git remote get-url origin").strip().rstrip("/").rstrip(".git")
+        url = run("git config --get remote.origin.url").strip().rstrip("/").rstrip(".git")
 
         render = ChangelogRender(self, old, new, url)
 
