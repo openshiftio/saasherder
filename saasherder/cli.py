@@ -74,7 +74,7 @@ def main():
     subparser_changelog = subparsers.add_parser("changelog")
 
     subparser_changelog.add_argument("--context", action="store")
-    subparser_changelog.add_argument("--format", choices=['markdown', 'plain'], default='plain')
+    subparser_changelog.add_argument("--format", choices=['markdown', 'plain', 'html'], default='plain')
     subparser_changelog.add_argument("old", action="store", help="Commit or a date (parsed by dateutil.parser)")
     subparser_changelog.add_argument("new", action="store", help="Commit or a date (parsed by dateutil.parser)")
 
