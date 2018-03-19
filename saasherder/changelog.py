@@ -30,6 +30,8 @@ class ChangelogRender(object):
     def plain(self):
         header_template = "Context changes: {old:.8}..{new}\n{url}/compare/{old:.8}...{new}\n"
 
+        names_list_template = '- {}'
+
         section_template = textwrap.dedent("""\
                            ### {name}
 
@@ -44,12 +46,33 @@ class ChangelogRender(object):
                            Commits:
                            {log}""")
 
-        commit_template =  '- %s\n  {url}/commit/%h'
+        commit_template = '- %s\n  {url}/commit/%h'
 
-        return self.render(header_template, section_template, commit_template)
+        return self.render(header_template, section_template, commit_template, names_list_template)
+
+    def html(self):
+        header_template = "<p>Context changes: <a href='{url}/compare/{old}...{new}'>{old:.8}..{new}</a></p>"
+
+        names_list_template = '<li>{}</li>'
+
+        section_template = textwrap.dedent("""\
+                           <h3>{name}</h3>
+                           <p>Url: <a href='{url}'>{url}</a></p>
+                           <p>List of services with this url:</p>
+                           <ul>{names_list}</ul>
+                           <p>Commits: <a href='{url}/compare/{old}...{new}'>{old:.8}..{new:.8}</a> (Last updated at {last_changed})</p>
+                           <ul>{log}</ul>
+                           """)
+
+        commit_template = '<li><a href="{url}/commit/%h">%s</a></li>'
+
+        return self.render(header_template, section_template, commit_template,
+                           names_list_template)
 
     def markdown(self):
         header_template = "Context changes: [{old:.8}..{new}]({url}/compare/{old}...{new})\n\n"
+
+        names_list_template = '- {}'
 
         section_template = textwrap.dedent("""\
                            **[{names}]({url})**
@@ -58,13 +81,12 @@ class ChangelogRender(object):
 
                            {log}""")
 
-        commit_template =  '- [%h]({url}/commit/%H) %s'
+        commit_template = '- [%h]({url}/commit/%H) %s'
 
+        return self.render(header_template, section_template, commit_template, names_list_template)
 
-        return self.render(header_template, section_template, commit_template)
-
-    def render(self, header_template, section_template, commit_template):
-        """Pretty print the change log"""
+    def render(self, header_template, section_template, commit_template, names_list_template):
+        """html print the change log"""
 
         # Build the body
         header = header_template.format(url=self.url, old=self.old, new=self.new)
@@ -72,8 +94,9 @@ class ChangelogRender(object):
         body = [header]
 
         for service in self.changelog.changed_services:
-            names_list = "\n".join(["- {}".format(n) for n in service['names']])
             url = service['url']
+
+            names_list = "\n".join([names_list_template.format(n) for n in service['names']])
 
             section = section_template.format(name=service['name'],
                                               names_list=names_list,
@@ -88,9 +111,13 @@ class ChangelogRender(object):
 
     def log(self, service, commit_template):
         """Get the changelog for one service"""
+
         template = commit_template.format(url=service['url'])
-        git_log_cmd = "git log --format='{}' {}...{}".format(template, service['old'], service['new'])
-        return self.changelog.service_run(service, git_log_cmd)
+        git_log_cmd = "git log --encoding=utf-8 --format='{}' {}...{}".format(template, service['old'], service['new'])
+
+        commits = self.changelog.service_run(service, git_log_cmd)
+
+        return commits.encode('utf-8')
 
     def last_changed(self, service):
         """Get the commit time for service at specific commit"""
@@ -201,7 +228,7 @@ class Changelog(object):
         # Get the first commit before the date
         return run("git rev-list -1 --before='{}' {}".format(date, branch)).strip()
 
-    def generate(self, context, old, new, format):
+    def generate(self, context, old, new, out_format):
 
         logger.info("Generating changelog for {}".format(context))
 
@@ -250,9 +277,11 @@ class Changelog(object):
 
         render = ChangelogRender(self, old, new, url)
 
-        if format == "markdown":
+        if out_format == "markdown":
             print render.markdown()
-        elif format == "plain":
+        elif out_format == "plain":
             print render.plain()
+        elif out_format == "html":
+            print render.html()
 
         return 0
