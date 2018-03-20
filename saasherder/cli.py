@@ -64,6 +64,10 @@ def main():
     subparser_get.add_argument("services", nargs="*", default="all",
                                     help="Services to query")
 
+    # subcommand: get-services
+    subparser_get_services = subparsers.add_parser("get-services", help="Get list of services")
+    subparser_get_services.add_argument("--context", action="store")
+
     # subcommand: config
     subparser_config = subparsers.add_parser("config", help="Extracts info from the configuration file")
 
@@ -94,6 +98,12 @@ def main():
     elif args.command == "get":
       for val in se.get(args.type, args.services):
         print val
+    elif args.command == "get-services":
+      if args.context:
+        sc = SaasConfig(args.config)
+        sc.switch_context(args.context)
+      for service in se.get_services("all"):
+        print service['name']
     elif args.command == "config":
       sc = SaasConfig(args.config)
       if args.type == "get-contexts":
