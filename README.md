@@ -55,7 +55,7 @@ services:
 
 Config file should be located in the root of the repository (to be automatically picked up by the tool). It helps SaaS Herder to find tracked services and provides default locations for download and processing of the files.
 
-It can contain multiple contexts, which can point to multiple service folders. We use this to map service yaml files to projects in OpenShift - i.e. context `dsaas` will map to project `dsaas-production`. 
+It can contain multiple contexts, which can point to multiple service folders. We use this to map service yaml files to projects in OpenShift - i.e. context `dsaas` will map to project `dsaas-production`.
 
 ```
 current: dsaas
@@ -64,7 +64,7 @@ contexts:
   data:
     output_dir: dsaas-processed
     services_dir: dsaas-services
-    templates_dir: dsaas-templates 
+    templates_dir: dsaas-templates
 ```
 
 # Basic Usage
@@ -109,7 +109,7 @@ This will take templates in `dsaas-templates/` and commit hashes in `dsaas-servi
 It requires `oc` binary to be present on path and logged into some OpenShift instance (it actually calls `oc process` to leverage existing tooling). If you don't want to, or cannot login to OpenShift instance for processing, you can use `--local` option
 
 ```
-saasherder  --context dsaas template --output-dir test --local tag 
+saasherder  --context dsaas template --output-dir test --local tag
 ```
 
 
@@ -153,6 +153,9 @@ This snippet will ensure your new service will skip deployment to production, bu
 
 ## Test
 
+NOTE: Due to an upstream issue, the tests now require a specific version of the
+`origin-clients` package. This may be reversed in the future.
+
 SaaS Herder tests are run in an isolated container, but talks to the host docker
 daemon to talk to the oc cluster.
 
@@ -178,5 +181,5 @@ make local-test
 
 ## dsaas-tracking-services
 these are tracking services that we are not deploying via saas, but come via another pipeline
-we still need to track where to get the content, and the ver deployed 
+we still need to track where to get the content, and the ver deployed
 
