@@ -1,15 +1,16 @@
 FROM centos
 
-RUN yum -y install epel-release centos-release-openshift-origin
-RUN yum -y install python-pip git origin-clients
-RUN pip install pytest
+RUN yum -y install epel-release centos-release-openshift-origin && \
+    yum -y install python-pip git && \
+    yum -y install origin-clients-3.7.0-1.0.7ed6862 && \
+    pip install pytest
 
 WORKDIR /opt/saasherder
 
 ADD requirements.txt /opt/saasherder
 RUN pip install -r requirements.txt
 
-ADD . /opt/saasherder 
+ADD . /opt/saasherder
 ENV PYTHONPATH=/opt/saasherder/saasherder/
 
 CMD pytest
