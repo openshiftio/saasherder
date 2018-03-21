@@ -7,12 +7,13 @@ import subprocess
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
+
 from changelog import Changelog
+from validation import VALIDATION_RULES, ValidationRuleError
 
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class SaasHerder(object):
 
@@ -360,6 +361,34 @@ class SaasHerder(object):
             for o in template.get("objects", []):
                 if o.get("kind") in objects:
                     print("=> %s: %s" % (o.get("kind"), o.get("metadata", {}).get("name")))
+
+    def validate(self):
+        """ Apply all validation rules on all the templates that must be already available
+
+            Returns two values: bool and list
+
+            The first value (bool) indicates whether the validation is
+            succesful. The second value (list) is the list of error messages. It
+            only makes if the first value is false.
+
+        """
+
+        valid = True
+        errors = {}
+
+        for service_name, service in self.services.items():
+            template_file = self.get_template_file(service)
+            template = anymarkup.parse_file(template_file)
+
+            for rule_class in VALIDATION_RULES:
+                try:
+                    rule = rule_class(template)
+                    rule.validate()
+                except ValidationRuleError as error:
+                    valid = False
+                    errors.setdefault(service_name, []).append(error)
+
+        return valid, errors
 
 """
 for o in template.get("objects", []):

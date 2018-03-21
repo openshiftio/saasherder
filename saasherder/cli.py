@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 
 from saasherder import SaasHerder
 from config import SaasConfig
@@ -82,6 +83,10 @@ def main():
     subparser_changelog.add_argument("old", action="store", help="Commit or a date (parsed by dateutil.parser)")
     subparser_changelog.add_argument("new", action="store", help="Commit or a date (parsed by dateutil.parser)")
 
+    # subcommand: validate
+    subparser_validate = subparsers.add_parser("validate")
+    subparser_validate.add_argument("--context", action="store")
+
     # Execute command
     args = parser.parse_args()
 
@@ -111,6 +116,21 @@ def main():
                 print context
     elif args.command == "changelog":
         se.changelog.generate(args.context, args.old, args.new, args.format)
+    elif args.command == "validate":
+        if args.context:
+            sc = SaasConfig(args.config)
+            sc.switch_context(args.context)
+
+        ok, errors_dict = se.validate()
+
+        if not ok:
+            for service_name, errors in errors_dict.items():
+                print "service: {}".format(service_name)
+                for error in errors:
+                    print "- {}".format(error)
+
+            sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
