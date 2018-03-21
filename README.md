@@ -153,9 +153,6 @@ This snippet will ensure your new service will skip deployment to production, bu
 
 ## Test
 
-NOTE: Due to an upstream issue, the tests now require a specific version of the
-`origin-clients` package. This may be reversed in the future.
-
 SaaS Herder tests are run in an isolated container, but talks to the host docker
 daemon to talk to the oc cluster.
 
