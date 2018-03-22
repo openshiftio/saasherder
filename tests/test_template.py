@@ -4,7 +4,7 @@ import re
 import tempfile
 import anymarkup
 from saasherder import SaasHerder
-from shutil import copyfile
+from shutil import copytree, copyfile
 import subprocess
 
 service_dir = "tests/data/service"
@@ -12,12 +12,15 @@ templates_dir = "tests/data/template"
 output_dir = tempfile.mkdtemp()
 
 temp_dir = tempfile.mkdtemp()
+tests_dir = os.path.join(temp_dir, 'tests', 'data')
 temp_path = os.path.join(temp_dir, "config.yaml")
-  
+
+
 class TestTemplating(object):
   def setup_method(self, method):
-    # Start from fresh config.yaml
     copyfile("tests/data/config.yaml", temp_path)
+    if not os.path.isdir(tests_dir):
+      copytree("tests/data", tests_dir)
 
   def test_template_hash(self):
     hash = "abcdef"
@@ -96,7 +99,7 @@ class TestTemplating(object):
       for line in fp:
         if re.search("    - name: '8080'", line):
           return True
-    
+
     assert False
 
   def test_template_apply_dry_run(self):

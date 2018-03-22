@@ -20,6 +20,7 @@ class SaasHerder(object):
     def __init__(self, config_path, context, environment=None):
         self.config = SaasConfig(config_path, context)
         self.changelog = Changelog(self)
+        self.repo_path = os.path.dirname(config_path)
 
         if context:
             self.config.switch_context(context)
@@ -73,14 +74,14 @@ class SaasHerder(object):
         """ Reads info from the defined configuration file """
 
         # dir to store pulled templates
-        self.templates_dir = self.config.get("templates_dir")
+        self.templates_dir = os.path.join(self.repo_path, self.config.get("templates_dir"))
         self.mkdir_templates_dir()
 
         # dir to store the service definitions
-        self.services_dir = self.config.get("services_dir")
+        self.services_dir = os.path.join(self.repo_path, self.config.get("services_dir"))
 
         # dir to store the processed templates
-        self.output_dir = self.config.get("output_dir")
+        self.output_dir = os.path.join(self.repo_path, self.config.get("output_dir"))
 
     def apply_environment_config(self, s):
         """ overrides the parameters of the service with those defined in the environment section """

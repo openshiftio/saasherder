@@ -2,21 +2,24 @@ import os
 import pytest
 import tempfile
 import anymarkup
-from shutil import copyfile
+from shutil import copytree, copyfile
 
 from saasherder import SaasHerder
 
 temp_dir = tempfile.mkdtemp()
+tests_dir = os.path.join(temp_dir, 'tests', 'data')
 temp_path = os.path.join(temp_dir, "config.yaml")
+
 
 class TestSH(object):
   def setup_method(self, method):
-    # Start from fresh config.yaml
     copyfile("tests/data/config.yaml", temp_path)
+    if not os.path.isdir(tests_dir):
+      copytree("tests/data", tests_dir)
 
   def test_sh_load(self):
     sh = SaasHerder(temp_path, None)
-    assert sh.output_dir == "saas-processed"
+    assert os.path.basename(sh.output_dir) == "saas-processed"
 
   def test_sh_services_num(self):
     sh = SaasHerder(temp_path, None)
@@ -46,4 +49,4 @@ class TestSH(object):
     assert len(data["services"]) == 2
     assert data["services"][1]["hash"] == "master"
 
-  
+
