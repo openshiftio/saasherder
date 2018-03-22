@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from subprocess import Popen, PIPE
-from dateutil.parser import parse
-
 import logging
 import os
+import re
 import textwrap
+
+from subprocess import Popen, PIPE
+
+from dateutil.parser import parse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 def run(cmd):
     logger.info("$ {}".format(cmd))
     p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-    stdout, stderr = p.communicate()
+    stdout, _ = p.communicate()
     if p.returncode != 0:
         raise Exception("$ {} FAILED with exit code {}"
                         .format(cmd, p.returncode))
@@ -273,7 +275,8 @@ class Changelog(object):
         for service in self.changed_services:
             self.checkout(service)
 
-        url = run("git config --get remote.origin.url").strip().rstrip("/").rstrip(".git")
+        url = run("git config --get remote.origin.url")
+        url = re.sub(r"(\.git)?(\/)?$", "", url.strip())
 
         render = ChangelogRender(self, old, new, url)
 
