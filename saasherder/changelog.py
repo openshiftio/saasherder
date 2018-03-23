@@ -127,10 +127,10 @@ class ChangelogRender(object):
 
 class Changelog(object):
 
-    workspace = "_workspace/"
-
     def __init__(self, parent):
         self.parent = parent
+        self.repo_path = parent.repo_path
+        self.workspace = os.path.join(self.repo_path, '_workspace')
 
         # list of changed services
         self.changed_services = []
@@ -182,7 +182,7 @@ class Changelog(object):
 
     def worktree(self, service):
         """Get git worktree path for a service"""
-        return self.workspace + service['name']
+        return os.path.join(self.workspace, service['name'])
 
     def service_run(self, service, cmd):
         """Run in the directory of the service"""
@@ -194,7 +194,7 @@ class Changelog(object):
 
     def _fetch(self, service):
         """Private; use checkout instead"""
-        self.service_run(service, "git fetch")
+        run("git -C '{}' fetch".format(self.worktree(service)))
 
     def checkout(self, service):
         """Get a service checked out at specified version"""
@@ -228,7 +228,7 @@ class Changelog(object):
             return date_or_commit
 
         # Get the first commit before the date
-        return run("git rev-list -1 --before='{}' {}".format(date, branch)).strip()
+        return run("git -C '{}' rev-list -1 --before='{}' {}".format(self.repo_path, date, branch)).strip()
 
     def generate(self, context, old, new, out_format):
 
@@ -244,12 +244,13 @@ class Changelog(object):
         # Where am I right now?
         try:
             # This will fail for detached HEAD
-            branch = run("git symbolic-ref --short HEAD").strip()
+            branch = run("git -C '{}' symbolic-ref --short HEAD".format(self.repo_path)).strip()
             logger.info("On branch {} before generating changelog"
                         .format(branch))
 
         except Exception:
-            branch = run("git rev-parse --short HEAD").strip()
+            branch = run(
+                "git -C '{}' rev-parse --short HEAD".format(self.repo_path)).strip()
             logger.info("HEAD at {} before generating changelog"
                         .format(branch))
 
@@ -258,14 +259,14 @@ class Changelog(object):
         new = self.convert_date_to_commit(branch, new)
 
         # Checkout to previous version and get services
-        run("git checkout {}".format(old))
+        run("git -C '{}' checkout {}".format(self.repo_path, old))
         previous, _ = self.parent.load_services()
 
-        run("git checkout {}".format(new))
+        run("git -C '{}' checkout {}".format(self.repo_path, new))
         now, _ = self.parent.load_services()
 
         # Go back to where we were
-        run("git checkout {}".format(branch))
+        run("git -C '{}' checkout {}".format(self.repo_path, branch))
 
         self.fetch_diff(now, previous)
 
@@ -275,16 +276,14 @@ class Changelog(object):
         for service in self.changed_services:
             self.checkout(service)
 
-        url = run("git config --get remote.origin.url")
+        url = run("git -C '{}' config --get remote.origin.url".format(self.repo_path))
         url = re.sub(r"(\.git)?(\/)?$", "", url.strip())
 
         render = ChangelogRender(self, old, new, url)
 
         if out_format == "markdown":
-            print render.markdown()
-        elif out_format == "plain":
-            print render.plain()
+            return render.markdown()
         elif out_format == "html":
-            print render.html()
-
-        return 0
+            return render.html()
+        else:
+            return render.plain()

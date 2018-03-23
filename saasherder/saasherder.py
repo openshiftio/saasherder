@@ -19,8 +19,9 @@ class SaasHerder(object):
 
     def __init__(self, config_path, context, environment=None):
         self.config = SaasConfig(config_path, context)
-        self.changelog = Changelog(self)
-        self.repo_path = os.path.dirname(config_path)
+
+        config_dirname = os.path.dirname(config_path)
+        self.repo_path = config_dirname if config_dirname else '.'
 
         if context:
             self.config.switch_context(context)
@@ -35,6 +36,7 @@ class SaasHerder(object):
             self._environment = environment
 
         self.load_from_config()
+        self.changelog = Changelog(self)
 
     # TODO: This function should take context or "all" as an argument instead of the
     # hidden the implicit state. Zen of Python says "Explicit is better than

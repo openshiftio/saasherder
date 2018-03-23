@@ -115,7 +115,7 @@ def main():
             for context in sc.get_contexts():
                 print context
     elif args.command == "changelog":
-        se.changelog.generate(args.context, args.old, args.new, args.format)
+        print se.changelog.generate(args.context, args.old, args.new, args.format)
     elif args.command == "validate":
         if args.context:
             sc = SaasConfig(args.config)
