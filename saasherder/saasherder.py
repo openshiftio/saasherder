@@ -8,7 +8,7 @@ from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
 
-from validation import VALIDATION_RULES, ValidationRuleError
+from validation import VALIDATION_RULES
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -375,21 +375,22 @@ class SaasHerder(object):
         """
 
         valid = True
-        errors = {}
+        errors_service = {}
 
         for service_name, service in self.services.items():
             template_file = self.get_template_file(service)
             template = anymarkup.parse_file(template_file)
 
             for rule_class in VALIDATION_RULES:
-                try:
-                    rule = rule_class(template)
-                    rule.validate()
-                except ValidationRuleError as error:
-                    valid = False
-                    errors.setdefault(service_name, []).append(error)
+                rule = rule_class(template)
+                errors = rule.validate()
 
-        return valid, errors
+                if errors:
+                    valid = False
+                    errors_service.setdefault(
+                        service_name, []).extend(errors)
+
+        return valid, errors_service
 
 """
 for o in template.get("objects", []):

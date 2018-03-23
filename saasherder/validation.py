@@ -1,6 +1,3 @@
-class ValidationRuleError(Exception):
-    pass
-
 class ValidationRule(object):
     def __init__(self, template):
         self.template = template
@@ -11,11 +8,15 @@ class ValidationRule(object):
             self.objects.setdefault(kind, []).append(obj)
 
     def error(self, msg):
-        name = self.__class__.__name__
-        raise ValidationRuleError("{}: {}".format(name, msg))
+        return "{}: {}".format(self.__class__.__name__, msg)
 
 class ContainerRequestsLimitsRule(ValidationRule):
+    def error_msg(self, dc_name, container_name, msg):
+        error_msg = "dc {}, container {}: {}".format(dc_name, container_name, msg)
+        return self.error(error_msg)
+
     def validate(self):
+        errors = []
         for dc in self.objects['DeploymentConfig']:
             for container in dc['spec']['template']['spec']['containers']:
                 resources = container.get('resources', {})
@@ -32,20 +33,18 @@ class ContainerRequestsLimitsRule(ValidationRule):
                     dc_name = dc.get('metadata', {}).get('name', 'unnamed_dc')
                     container_name = container.get('name', 'unnamed_container')
 
-                    error_msg = "dc: {}, container: {}.".format(dc_name, container_name)
-
                     if not memory_limit:
-                        error_msg += ' Undefined memory limit.'
+                        errors.append(self.error_msg(dc_name, container_name, 'Undefined memory limit'))
 
                     if not cpu_limit:
-                        error_msg += ' Undefined cpu limit.'
+                        errors.append(self.error_msg(dc_name, container_name, 'Undefined cpu limit'))
 
                     if not memory_request:
-                        error_msg += ' Undefined memory request.'
+                        errors.append(self.error_msg(dc_name, container_name, 'Undefined memory request'))
 
                     if not cpu_request:
-                        error_msg += ' Undefined cpu request.'
+                        errors.append(self.error_msg(dc_name, container_name, 'Undefined cpu request'))
 
-                    self.error(error_msg)
+        return errors
 
 VALIDATION_RULES = [ContainerRequestsLimitsRule]
