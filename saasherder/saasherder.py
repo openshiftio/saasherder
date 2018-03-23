@@ -8,7 +8,6 @@ from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
 
-from changelog import Changelog
 from validation import VALIDATION_RULES, ValidationRuleError
 
 import logging
@@ -36,7 +35,6 @@ class SaasHerder(object):
             self._environment = environment
 
         self.load_from_config()
-        self.changelog = Changelog(self)
 
     # TODO: This function should take context or "all" as an argument instead of the
     # hidden the implicit state. Zen of Python says "Explicit is better than

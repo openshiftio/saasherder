@@ -3,8 +3,9 @@
 import argparse
 import sys
 
-from saasherder import SaasHerder
-from config import SaasConfig
+from .saasherder import SaasHerder
+from .config import SaasConfig
+from .changelog import Changelog
 
 def main():
     parser = argparse.ArgumentParser(description='')
@@ -115,7 +116,8 @@ def main():
             for context in sc.get_contexts():
                 print context
     elif args.command == "changelog":
-        print se.changelog.generate(args.context, args.old, args.new, args.format)
+        changelog = Changelog(se)
+        print changelog.generate(args.context, args.old, args.new, args.format)
     elif args.command == "validate":
         if args.context:
             sc = SaasConfig(args.config)

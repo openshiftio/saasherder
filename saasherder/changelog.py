@@ -127,9 +127,12 @@ class ChangelogRender(object):
 
 class Changelog(object):
 
-    def __init__(self, parent):
-        self.parent = parent
-        self.repo_path = parent.repo_path
+    def __init__(self, saasherder):
+        self.new_saasherder(saasherder)
+
+    def new_saasherder(self, saasherder):
+        self.saasherder = saasherder
+        self.repo_path = self.saasherder.repo_path
         self.workspace = os.path.join(self.repo_path, '_workspace')
 
         # list of changed services
@@ -239,7 +242,7 @@ class Changelog(object):
         # reading and understanding code much more painful than necessary.
         # `self.config["current"]` and `self.config["contexts"]` can be avoided
         # to make this far simpler.
-        self.parent.config.switch_context(context)
+        self.saasherder.config.switch_context(context)
 
         # Where am I right now?
         try:
@@ -260,10 +263,10 @@ class Changelog(object):
 
         # Checkout to previous version and get services
         run("git -C '{}' checkout {}".format(self.repo_path, old))
-        previous, _ = self.parent.load_services()
+        previous, _ = self.saasherder.load_services()
 
         run("git -C '{}' checkout {}".format(self.repo_path, new))
-        now, _ = self.parent.load_services()
+        now, _ = self.saasherder.load_services()
 
         # Go back to where we were
         run("git -C '{}' checkout {}".format(self.repo_path, branch))
