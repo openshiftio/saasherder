@@ -378,17 +378,18 @@ class SaasHerder(object):
         errors_service = {}
 
         for service_name, service in self.services.items():
-            template_file = self.get_template_file(service)
-            template = anymarkup.parse_file(template_file)
+            if service.get('hash'):
+                template_file = self.get_template_file(service)
+                template = anymarkup.parse_file(template_file)
 
-            for rule_class in VALIDATION_RULES:
-                rule = rule_class(template)
-                errors = rule.validate()
+                for rule_class in VALIDATION_RULES:
+                    rule = rule_class(template)
+                    errors = rule.validate()
 
-                if errors:
-                    valid = False
-                    errors_service.setdefault(
-                        service_name, []).extend(errors)
+                    if errors:
+                        valid = False
+                        errors_service.setdefault(
+                            service_name, []).extend(errors)
 
         return valid, errors_service
 
