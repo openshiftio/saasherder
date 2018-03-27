@@ -1,18 +1,20 @@
 import os
 import pytest
 import tempfile
-from shutil import copyfile
+from shutil import copytree, copyfile
 
 from config import SaasConfig
 
 temp_dir = tempfile.mkdtemp()
+tests_dir = os.path.join(temp_dir, 'tests', 'data')
 temp_path = os.path.join(temp_dir, "config.yaml")
 
 
 class TestConfig(object):
   def setup_method(self, method):
-    # Start from fresh config.yaml
     copyfile("tests/data/config.yaml", temp_path)
+    if not os.path.isdir(tests_dir):
+      copytree("tests/data", tests_dir)
 
   def test_config_load(self):
     sc = SaasConfig(temp_path)
@@ -21,7 +23,7 @@ class TestConfig(object):
   def test_context_exists(self):
     sc = SaasConfig(temp_path)
     assert sc.context_exists("saas")
-  
+
   def test_context_not_exists(self):
     sc = SaasConfig(temp_path)
     assert not sc.context_exists("foo")
@@ -56,4 +58,4 @@ class TestConfig(object):
     assert sc.current() == "saas"
     sc = SaasConfig(temp_path, context)
     assert sc.current() == context
-    
+

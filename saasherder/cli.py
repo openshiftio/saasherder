@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 
-from saasherder import SaasHerder
-from config import SaasConfig
+from .saasherder import SaasHerder
+from .config import SaasConfig
+from .changelog import Changelog
 
 def main():
     parser = argparse.ArgumentParser(description='')
@@ -21,14 +23,14 @@ def main():
 
     # subcommand: pull
     subparser_pull = subparsers.add_parser("pull",
-                                           help="Download templates from repositories and store them locally")
+                                            help="Download templates from repositories and store them locally")
 
     subparser_pull.add_argument('service', nargs="*", default="all")
     subparser_pull.add_argument('--token', default=None, help="Token to use when pulling from private repo")
 
     # subcommand: update
     subparser_update = subparsers.add_parser("update",
-                                             help="Replace parameters in a service template and write it to a file")
+                                              help="Replace parameters in a service template and write it to a file")
 
     subparser_update.add_argument('-o', '--output-file', default=None,
                                   help='Name of the output file for updated services yaml')
@@ -41,7 +43,7 @@ def main():
 
     # subcommand: template
     subparser_template = subparsers.add_parser("template",
-                                               help="Runs oc process to generate the templates. Requires running pull first")
+                                                help="Runs oc process to generate the templates. Requires running pull first")
 
     subparser_template.add_argument('-f', '--force', default=False, action='store_true',
                         help='Force processing of all templates (i.e. those with skip: True)')
@@ -82,35 +84,55 @@ def main():
     subparser_changelog.add_argument("old", action="store", help="Commit or a date (parsed by dateutil.parser)")
     subparser_changelog.add_argument("new", action="store", help="Commit or a date (parsed by dateutil.parser)")
 
+    # subcommand: validate
+    subparser_validate = subparsers.add_parser("validate")
+    subparser_validate.add_argument("--context", action="store")
+
     # Execute command
     args = parser.parse_args()
 
     se = SaasHerder(args.config, args.context, args.environment)
 
     if args.command == "pull":
-      if args.service:
-        se.collect_services(args.service, args.token)
+        if args.service:
+            se.collect_services(args.service, args.token)
     elif args.command == "update":
-      se.update(args.type, args.service, args.value, output_file=args.output_file)
+        se.update(args.type, args.service, args.value, output_file=args.output_file)
     elif args.command == "template":
-      filters = args.filter.split(",") if args.filter else None
-      se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+        filters = args.filter.split(",") if args.filter else None
+        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
     elif args.command == "get":
-      for val in se.get(args.type, args.services):
-        print val
+        for val in se.get(args.type, args.services):
+            print val
     elif args.command == "get-services":
-      if args.context:
-        sc = SaasConfig(args.config)
-        sc.switch_context(args.context)
-      for service in se.get_services("all"):
-        print service['name']
+        if args.context:
+            sc = SaasConfig(args.config)
+            sc.switch_context(args.context)
+        for service in se.get_services("all"):
+            print service['name']
     elif args.command == "config":
-      sc = SaasConfig(args.config)
-      if args.type == "get-contexts":
-        for context in sc.get_contexts():
-          print context
+        sc = SaasConfig(args.config)
+        if args.type == "get-contexts":
+            for context in sc.get_contexts():
+                print context
     elif args.command == "changelog":
-        se.changelog.generate(args.context, args.old, args.new, args.format)
+        changelog = Changelog(se)
+        print changelog.generate(args.context, args.old, args.new, args.format)
+    elif args.command == "validate":
+        if args.context:
+            sc = SaasConfig(args.config)
+            sc.switch_context(args.context)
+
+        ok, errors_dict = se.validate()
+
+        if not ok:
+            for service_name, errors in errors_dict.items():
+                print "service: {}".format(service_name)
+                for error in errors:
+                    print "- {}".format(error)
+
+            sys.exit(1)
+
 
 if __name__ == "__main__":
-  main()
+    main()
