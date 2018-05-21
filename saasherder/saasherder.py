@@ -4,6 +4,7 @@ import yaml
 import requests
 import copy
 import subprocess
+import sys
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
@@ -303,12 +304,13 @@ class SaasHerder(object):
             params_processed = ["%s=%s" % (i["name"], i["value"]) for i in parameters]
             local_opt = "--local" if local else ""
 
-            cmd = ["oc", "process", "--ignore-unknown-parameters=true", local_opt, "--output", "yaml", "-f", template_file]
+            cmd = ["oc", "process", local_opt, "--output", "yaml", "-f", template_file]
             process_cmd = cmd + params_processed
 
             output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
 
             logger.info("%s > %s" % (" ".join(process_cmd), output_file))
+
             try:
                 output = subprocess.check_output(process_cmd)
 
@@ -317,13 +319,10 @@ class SaasHerder(object):
 
                 with open(output_file, "w") as fp:
                     fp.write(output)
+
             except subprocess.CalledProcessError as e:
-                #If the processing failed, try without PARAMS and warn
-                output = subprocess.check_output(cmd)
-                with open(output_file, "w") as fp:
-                    fp.write(output)
-                logger.warning("Templating of %s with parameters failed, trying without" % template_file)
-                pass
+                print e.message
+                sys.exit(1)
 
     def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False):
         """ Process templates """
