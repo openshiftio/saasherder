@@ -1,7 +1,8 @@
 """
 Checks the existence of a tag in a registry by calling skopeo
 
-It enforces that the image must be hosted in Quay.io
+It enforces that the image must be hosted in Quay.io, belong to a
+specific namespace `openshiftio` and start with `rhel-`.
 """
 
 import sys
