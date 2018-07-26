@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
 
 OPENSHIFT_TEMPLATE = sys.argv[1]
 AUTH_FILE = os.path.expanduser('~/skopeo.json')
-IMAGE_PATH_START = "quay.io/"
+IMAGE_PATH_START = "quay.io/openshiftio/rhel-"
 
 images = []
 for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE)["items"]:
