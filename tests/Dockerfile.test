@@ -2,7 +2,7 @@ FROM centos
 
 RUN yum -y install epel-release centos-release-openshift-origin && \
     yum -y install python-pip git && \
-    yum -y install origin-clients && \
+    yum -y install origin-clients-3.9.0-1.el7.git.0.ba7faec && \
     pip install pytest
 
 WORKDIR /opt/saasherder
