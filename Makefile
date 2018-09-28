@@ -10,6 +10,6 @@ test: build-test-container
 .PHONY: local-test
 local-test: build-test-container
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $PWD/tests:/opt/saasherder/tests \
-	    -v $PWD/saasherder:/opt/saasherder/saasherder \
+        -v $(pwd)/tests:/opt/saasherder/tests \
+	    -v $(pwd)/saasherder:/opt/saasherder/saasherder \
 	    --privileged --net=host saasherder-test
