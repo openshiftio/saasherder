@@ -2,7 +2,7 @@
 
 TSTAMP=$(date +%Y%m%d_%H%M%S)
 TPLDIR="dsaas-templates"
-CONF="/home/`whoami`/.kube/config"
+CONF="${1:-/home/`whoami`/.kube/config}"
 
 SCRIPT_PATH="python ."
 if echo ${0} | grep -q "/"; then
@@ -55,7 +55,7 @@ function pull_tag {
     local SAAS_ENV=$3
 
     local TEMPLATE_DIR=${CONTEXT}-templates
-    
+
     if ${DRY_RUN}; then
         LOCAL="--local"
     fi
@@ -65,7 +65,7 @@ function pull_tag {
     rm -rf ${TEMPLATE_DIR}; mkdir -p ${TEMPLATE_DIR}
 
     if [ -e /home/`whoami`/${CONTEXT}-gh-token-`whoami` ]; then GH_TOKEN=" --token "$(cat /home/`whoami`/${CONTEXT}-gh-token-`whoami`); fi
-    
+
     ${CMD} --context ${CONTEXT} --environment ${SAAS_ENV} pull $GH_TOKEN
     PULL_RTN=$?
 
@@ -106,10 +106,10 @@ for g in `echo ${SAAS_CONTEXTS}`; do
 
     if [ -n "${APPSEC}" ]; then
         TSTAMPDIR_APPSEC="${CONTEXT}-${TSTAMP}-appsec"
-        mkdir -p ${TSTAMPDIR_APPSEC} 
+        mkdir -p ${TSTAMPDIR_APPSEC}
 
         pull_tag ${CONTEXT} ${TSTAMPDIR_APPSEC} "appsec"
-    
+
         for f in `ls ${TSTAMPDIR_APPSEC}/*`; do
             oc_apply $f "${CONF}-appsec"
         done
