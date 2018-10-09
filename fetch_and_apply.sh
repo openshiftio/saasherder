@@ -2,7 +2,12 @@
 
 TSTAMP=$(date +%Y%m%d_%H%M%S)
 TPLDIR="dsaas-templates"
-CONF="${1:-/home/`whoami`/.kube/config}"
+CONF="/home/`whoami`/.kube/config"
+
+if [[ -n "$1" && -n "$2" ]; then
+    KUBE_SERVER="$1"
+    KUBE_TOKEN="$2"
+fi
 
 SCRIPT_PATH="python ."
 if echo ${0} | grep -q "/"; then
@@ -40,7 +45,13 @@ function git_prep {
 function oc_apply {
     config=""
     local dryrun_arg=""
-    [ -n "${2}" ] && config="--config=${2}"
+
+    if [[ -n "$KUBE_SERVER" && -n "$KUBE_TOKEN" ]]; then
+        config="--server=${KUBE_SERVER} --token=${KUBE_TOKEN}"
+    else
+        [ -n "${2}" ] && config="--config=${2}"
+    fi
+
     if ${DRY_RUN}; then
         echo "oc $config apply -f $1"
         dryrun_arg="--dry-run"
@@ -81,7 +92,6 @@ function pull_tag {
 for g in `echo ${SAAS_CONTEXTS}`; do
     # get some basics in place, no prep in prod deploy
     CONTEXT=${g}
-
 
     if ! ${DRY_RUN}; then
         CONF="/home/`whoami`/.kube/cfg-${CONTEXT}"
