@@ -4,7 +4,7 @@ TSTAMP=$(date +%Y%m%d_%H%M%S)
 TPLDIR="dsaas-templates"
 CONF="/home/`whoami`/.kube/config"
 
-if [[ -n "$1" && -n "$2" ]; then
+if [[ -n "$1" && -n "$2" ]]; then
     KUBE_SERVER="$1"
     KUBE_TOKEN="$2"
 fi
