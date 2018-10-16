@@ -71,6 +71,24 @@ class SaasConfig(object):
 
     return context["data"][key]
 
+  def get_environment_key(self, environment, key):
+    context = self.context_exists(self.current())
+
+    if not context:
+      raise Exception("Context %s, set as 'current', does not exist" % self.current())
+
+    try:
+      context_environment = context["environments"][environment]
+    except KeyError:
+      raise Exception("Environment '%s' is not defined in the config file" % (environment,))
+
+    try:
+      val = context_environment[key]
+    except KeyError:
+      raise Exception("'%s' is not defined for environment '%s'" % (key, environment,))
+
+    return val
+
   def get_contexts(self):
     for c in self.config["contexts"]:
       yield c["name"]
