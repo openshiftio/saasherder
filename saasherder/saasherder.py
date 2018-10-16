@@ -295,8 +295,12 @@ class SaasHerder(object):
                 hash_len = s.get("hash_length", self._default_hash_length)
                 tag = s["hash"][:hash_len]
 
-            parameters = [{"name": "IMAGE_TAG", "value": tag}]
             service_params = s.get("parameters", {})
+
+            if 'IMAGE_TAG' not in service_params:
+                parameters = [{"name": "IMAGE_TAG", "value": tag}]
+            else:
+                parameters = []
 
             for key, val in service_params.iteritems():
                 parameters.append({"name": key, "value": val})
