@@ -76,6 +76,12 @@ def main():
     subparser_config.add_argument("type", choices=["get-contexts"],
                                     help="Prints the list of contexts in the configuration file")
 
+    # subcommand: config-environment
+    subparser_config_environment = subparsers.add_parser("config-environment",
+                    help="Extracts an environment key from the config file. Requires `--environment`.")
+
+    subparser_config_environment.add_argument("key", action="store", help="key to fetch")
+
     # subcommand: changelog
     subparser_changelog = subparsers.add_parser("changelog")
 
@@ -115,6 +121,12 @@ def main():
         if args.type == "get-contexts":
             for context in sc.get_contexts():
                 print context
+    elif args.command == "config-environment":
+        if args.environment is None:
+            print "For 'config-environment' using `--environment` is required."
+            sys.exit(1)
+        sc = SaasConfig(args.config)
+        return sc.get_environment_key(args.environment, args.key)
     elif args.command == "changelog":
         changelog = Changelog(se)
         print changelog.generate(args.context, args.old, args.new, args.format)
