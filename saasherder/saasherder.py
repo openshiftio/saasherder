@@ -199,7 +199,7 @@ class SaasHerder(object):
 
         return result
 
-    def download_template(self, s, token):
+    def download_template(self, s, token, verify_ssl=True):
         """ Returns a string containing the template of a service """
         url = self.get_raw(s)
 
@@ -211,14 +211,14 @@ class SaasHerder(object):
             headers = {"Authorization": "token %s" % token,
                        "Accept": "application/vnd.github.v3.raw"}
 
-        r = requests.get(url, headers=headers)  # FIXME
+        r = requests.get(url, headers=headers, verify=verify_ssl)
 
         if r.status_code != 200:
             raise Exception("Couldn't pull the template.")
 
         return r.content
 
-    def collect_services(self, service_names, token=None, dry_run=False, fail_on_error=False):
+    def collect_services(self, service_names, token=None, dry_run=False, fail_on_error=False, verify_ssl=True):
         """ Download templates from repositories """
         service_list = self.get_services(service_names)
 
@@ -226,7 +226,7 @@ class SaasHerder(object):
             logger.info("Service: %s" % s.get("name"))
 
             try:
-                template = self.download_template(s, token)
+                template = self.download_template(s, token, verify_ssl=verify_ssl)
             except Exception as e:
                 logger.error(e)
                 logger.warning("Skipping %s" % s.get("name"))
