@@ -18,6 +18,23 @@ if os.environ.get('AUTH_FILE'):
 else:
     AUTH_FILE = os.path.expanduser('~/skopeo.json')
 
+SKOPEO_USER = os.environ.get('SKOPEO_USER')
+SKOPEO_PASS = os.environ.get('SKOPEO_PASS')
+
+
+def skopeo_cmd(image):
+    cmd = ['skopeo', 'inspect']
+
+    if SKOPEO_USER and SKOPEO_PASS:
+        cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
+    else:
+        cmd += ['--authfile', AUTH_FILE]
+
+    cmd += ['docker://{}'.format(image)]
+
+    return cmd
+
+
 try:
     OPENSHIFT_TEMPLATE = sys.argv[1]
 except IndexError:
@@ -42,8 +59,8 @@ for image in images:
         sys.exit(1)
 
     with open(os.devnull, 'w') as devnull:
-        status_code = subprocess.call(
-            ['skopeo', 'inspect', '--authfile', AUTH_FILE, 'docker://%s' % (image,)], stdout=devnull)
+        print " ".join(skopeo_cmd(image))
+        status_code = subprocess.call(skopeo_cmd(image), stdout=devnull)
 
     if status_code == 0:
         print "OK"
