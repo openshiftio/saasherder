@@ -27,6 +27,7 @@ def main():
 
     subparser_pull.add_argument('service', nargs="*", default="all")
     subparser_pull.add_argument('--token', default=None, help="Token to use when pulling from private repo")
+    subparser_pull.add_argument('--insecure', default=False, action='store_true', help="Disable SSL_VERIFY")
 
     # subcommand: update
     subparser_update = subparsers.add_parser("update",
@@ -94,13 +95,15 @@ def main():
     se = SaasHerder(args.config, args.context, args.environment)
 
     if args.command == "pull":
+        verify_ssl = not args.insecure
         if args.service:
-            se.collect_services(args.service, args.token)
+            se.collect_services(args.service, args.token, verify_ssl=verify_ssl)
     elif args.command == "update":
         se.update(args.type, args.service, args.value, output_file=args.output_file)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
-        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+        se.template(args.type, args.services, args.output_dir, filters,
+                    force=args.force, local=args.local, verify_ssl=args.verify_ssl)
     elif args.command == "get":
         for val in se.get(args.type, args.services):
             print val
