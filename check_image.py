@@ -13,7 +13,7 @@ import sys
 
 import anymarkup
 
-AUTH_FILE = os.path.expanduser('~/skopeo.json')
+AUTH_FILE = os.environ.get('AUTH_FILE', os.path.expanduser('~/skopeo.json'))
 
 try:
     OPENSHIFT_TEMPLATE = sys.argv[1]
