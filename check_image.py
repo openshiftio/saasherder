@@ -59,7 +59,6 @@ for image in images:
         sys.exit(1)
 
     with open(os.devnull, 'w') as devnull:
-        print " ".join(skopeo_cmd(image))
         status_code = subprocess.call(skopeo_cmd(image), stdout=devnull)
 
     if status_code == 0:
