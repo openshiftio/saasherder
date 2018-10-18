@@ -102,8 +102,8 @@ def main():
         se.update(args.type, args.service, args.value, output_file=args.output_file)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
-        se.template(args.type, args.services, args.output_dir, filters,
-                    force=args.force, local=args.local, verify_ssl=args.verify_ssl)
+        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+
     elif args.command == "get":
         for val in se.get(args.type, args.services):
             print val
