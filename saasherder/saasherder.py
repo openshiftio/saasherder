@@ -244,7 +244,7 @@ class SaasHerder(object):
 
                 logger.info("Template written to %s" % filename)
 
-    def update(self, cmd_type, service_name, value, output_file=None):
+    def update(self, cmd_type, service_name, value, output_file=None, verify_ssl=True):
         """ Update service object and write it to file """
         services = self.get_services(service_name)
         if len(services) == 0:
@@ -261,7 +261,7 @@ class SaasHerder(object):
 
         try:
             # Double check that the service is retrievable with new change, otherwise abort
-            self.collect_services(service_name, dry_run=True, fail_on_error=True)
+            self.collect_services(service_name, dry_run=True, fail_on_error=True, verify_ssl=verify_ssl)
         except Exception as e:
             logger.error("Aborting update: %s" % e)
             return
