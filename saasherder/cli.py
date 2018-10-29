@@ -41,6 +41,7 @@ def main():
                                   help="Service to be updated")
     subparser_update.add_argument('value',
                                   help="Value to be used in services yaml")
+    subparser_update.add_argument('--insecure', default=False, action='store_true', help="Disable SSL_VERIFY")
 
     # subcommand: template
     subparser_template = subparsers.add_parser("template",
@@ -99,7 +100,8 @@ def main():
         if args.service:
             se.collect_services(args.service, args.token, verify_ssl=verify_ssl)
     elif args.command == "update":
-        se.update(args.type, args.service, args.value, output_file=args.output_file)
+        verify_ssl = not args.insecure
+        se.update(args.type, args.service, args.value, output_file=args.output_file, verify_ssl=verify_ssl)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
         se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
