@@ -23,7 +23,7 @@ class TestSH(object):
 
   def test_sh_services_num(self):
     sh = SaasHerder(temp_path, None)
-    assert len(sh.services) == 3
+    assert len(sh.services) == 4
 
   def test_sh_get_services(self):
     sh = SaasHerder(temp_path, None)

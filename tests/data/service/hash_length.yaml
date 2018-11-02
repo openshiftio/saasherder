@@ -7,7 +7,7 @@ services:
   hash_length: 7
   name: hash_length
   path: homeless-templates/redirector.yaml
-  url: https://github.com/openshiftio/saas/
+  url: https://github.com/openshiftio/saas-openshiftio/
 - environments:
   - name: no_params
     parameters:
@@ -16,4 +16,4 @@ services:
   hash_length: 7
   name: multiple_services
   path: homeless-templates/redirector.yaml
-  url: https://github.com/openshiftio/saas/
+  url: https://github.com/openshiftio/saas-openshiftio/
