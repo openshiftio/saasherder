@@ -152,13 +152,44 @@ class SaasHerder(object):
         if not os.path.isdir(self.templates_dir):
             os.mkdir(self.templates_dir)
 
+    def resolve_download_hash(self, service_hash):
+        """
+        Resolve download hashes with special values
+        """
+
+        if service_hash == 'ignore':
+            return 'master'
+
+        return service_hash
+
     def raw_gitlab(self, service):
         """ Construct link to raw file in gitlab """
-        return "%s/raw/%s/%s" % (service.get("url").rstrip("/"), service.get("hash"), service.get("path").lstrip("/"))
+
+        service_url = service.get("url").rstrip("/")
+        service_hash = self.resolve_download_hash(service.get("hash"))
+        service_path = service.get("path").lstrip("/")
+
+        url = "{}/raw/{}/{}".format(
+            service_url,
+            service_hash,
+            service_path
+        )
+
+        return url
 
     def raw_github(self, service):
         """ Construct link to raw file in github """
-        url = "https://raw.githubusercontent.com/%s/%s/%s" % ("/".join(service.get("url").rstrip("/").split("/")[-2:]), service.get("hash"), service.get("path").lstrip("/"))
+
+        service_url = "/".join(service.get("url").rstrip("/").split("/")[-2:])
+        service_hash = self.resolve_download_hash(service.get("hash"))
+        service_path = service.get("path").lstrip("/")
+
+        url = "https://raw.githubusercontent.com/{}/{}/{}".format(
+            service_url,
+            service_hash,
+            service_path
+        )
+
         return url
 
     def get_raw(self, service):
@@ -291,13 +322,15 @@ class SaasHerder(object):
                 continue
             elif s["hash"] == "master":
                 tag = "latest"
+            elif s["hash"] == "ignore":
+                tag = None
             else:
                 hash_len = s.get("hash_length", self._default_hash_length)
                 tag = s["hash"][:hash_len]
 
             service_params = s.get("parameters", {})
 
-            if 'IMAGE_TAG' not in service_params:
+            if tag and 'IMAGE_TAG' not in service_params:
                 parameters = [{"name": "IMAGE_TAG", "value": tag}]
             else:
                 parameters = []

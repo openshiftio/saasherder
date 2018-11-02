@@ -22,13 +22,14 @@ Repositories above not only contain references to all OpenShift templates for Op
 6. PR to change the commit hash is merged in the tracking repository (i.e. this is the **promote-to-prod** manual step)
 7. Once the PR merged into the tracking repository, CI job is kicked off, which deploys new version to production (e.g. checkouts a template from git repo for a given commit hash, processes it with `$IMAGE_TAG` and performs `oc apply`)
 
+
 # Tracking repositories
 ## Service YAML
 
 ```
 services:
 - hash: aab9fc5fa5c24360079998f2209b2b55c3af29ae
-  hash_length: 6
+  hash_length: 7
   name: some-name
   path: /openshift/template.yaml
   url: https://github.com/org/repo/
@@ -41,15 +42,19 @@ services:
       SOME_PARAM: prod_value
     skip: True
 ```
+a) for downloading OpenShift template and b) to generate image tag for template processing (`master` is translated to `latest`)
 
-* *hash*: Commit hash or branch which is used a) for downloading OpenShift template and b) to generate image tag for template processing (`master` is translated to `latest`)
-* *hash_length*: Number of characters to be used from *hash* as an image tag
-* *name*: Name of the service
-* *path*: Path to the template in the repo
-* *url*: URL of the repository which contains the template
-* *skip*: False by default, if True, the service will be skipped from processing (i.e. template will not be processed and output file for service will not be produced)
-* *parameters*: An object where key is the parameter name and value is the parameter value. These parameters will be added to `oc process` when processing the template
-* *environments*: A list where you can specify multiple environments which can be selected by passing an argument `--environment`. Values in a given environment will override
+- *hash*: Commit hash (SHA1) or special value which is used for downloading the OpenShift template and to generate image tag for template processing. Possible values are:
+  - `<commit_sha1>` (40 chars): Download OpenShift templates from that commit, and use the first `hash_length` chars of the sha1 tag for `IMAGE_TAG`.
+  - `master`: Downloads OpenShift templates from the last commit of the master branch, and will use `IMAGE_TAG=latest`.
+  - `ignore`: Downloads OpenShift templates from the last commit of the master branch, and will **not** generate `IMAGE_TAG`.
+- *hash_length*: Number of characters to be used from *hash* as an image tag
+- *name*: Name of the service
+- *path*: Path to the template in the repo
+- *url*: URL of the repository which contains the template
+- *skip*: False by default, if True, the service will be skipped from processing (i.e. template will not be processed and output file for service will not be produced)
+- *parameters*: An object where key is the parameter name and value is the parameter value. These parameters will be added to `oc process` when processing the template
+- *environments*: A list where you can specify multiple environments which can be selected by passing an argument `--environment`. Values in a given environment will override
   values in the top level section. Anything can be overridden but `name`, `url` and `hash`.
 
 ## Config YAML
