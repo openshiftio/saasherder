@@ -120,3 +120,13 @@ class TestTemplating(object):
           failed = True
     subprocess.call(["oc", "cluster", "down"])
     assert not failed
+
+  def test_template_parameters(self):
+    image = "some_image"
+    se = SaasHerder(temp_path, None)
+    se.template("tag", "redirector-ignore", output_dir, local=True)
+    data = anymarkup.parse_file(os.path.join(output_dir, "redirector-ignore.yaml"))
+    for item in data["items"]:
+      if item["kind"] == "DeploymentConfig":
+        assert item["spec"]["template"]["spec"]["containers"][0]["image"].endswith(
+            ":latest")
