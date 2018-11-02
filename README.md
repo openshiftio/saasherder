@@ -1,4 +1,4 @@
-# SaaS
+# saasherder
 
 There are many services in OpenShift.io SaaS. To track what is deployed in production and to be able redeploy the very same versions of all components quickly, we created this SaaS Herder tool. It helps helps to track all the OpenShift templates in various repositories and to process them for deployment.
 
@@ -22,7 +22,6 @@ Repositories above not only contain references to all OpenShift templates for Op
 6. PR to change the commit hash is merged in the tracking repository (i.e. this is the **promote-to-prod** manual step)
 7. Once the PR merged into the tracking repository, CI job is kicked off, which deploys new version to production (e.g. checkouts a template from git repo for a given commit hash, processes it with `$IMAGE_TAG` and performs `oc apply`)
 
-
 # Tracking repositories
 ## Service YAML
 
@@ -42,7 +41,6 @@ services:
       SOME_PARAM: prod_value
     skip: True
 ```
-a) for downloading OpenShift template and b) to generate image tag for template processing (`master` is translated to `latest`)
 
 - `hash`: Commit hash (SHA1) or special value which is used for downloading the OpenShift template and to generate image tag for template processing. Possible values are:
   - `<commit_sha1>` (40 chars): Download OpenShift templates from that commit, and use the first `hash_length` chars of the sha1 tag for `IMAGE_TAG`.
