@@ -284,8 +284,12 @@ class SaasHerder(object):
             raise Exception("Expecting only one service")
 
         service = services[0]
+
         if service[cmd_type] == value:
             logger.warning("Skipping update of %s, no change" % service)
+            return
+        elif cmd_type == "hash" and service[cmd_type] == "ignore":
+            logger.warning("Skipping update of %s, no change (hash: ignore)." % service)
             return
         else:
             service[cmd_type] = value
