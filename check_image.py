@@ -9,6 +9,7 @@ If regex is supplied the path of the image must match this regex
 import os
 import re
 import subprocess
+
 import sys
 
 import anymarkup
@@ -21,7 +22,8 @@ else:
 SKOPEO_USER = os.environ.get('SKOPEO_USER')
 SKOPEO_PASS = os.environ.get('SKOPEO_PASS')
 
-def skopeo_cmd(image, auth=True):
+
+def skopeo_inspect(image, auth=True):
     cmd = ['skopeo', 'inspect']
 
     if auth:
@@ -32,7 +34,9 @@ def skopeo_cmd(image, auth=True):
 
     cmd += ['docker://{}'.format(image)]
 
-    return cmd
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    return (p.returncode, stdout, stderr)
 
 
 try:
@@ -58,19 +62,18 @@ for image in images:
             image, image_path_pattern.pattern)
         sys.exit(1)
 
-    with open(os.devnull, 'w') as devnull:
-        status_code = subprocess.call(skopeo_cmd(image, True), stdout=devnull)
+    status_code, stdout_auth, stderr_auth = skopeo_inspect(image, True)
 
     if status_code == 0:
-        print "OK"
-        sys.exit()
+        continue
 
-    # Try again without authentication in case it's public
-    with open(os.devnull, 'w') as devnull:
-        status_code = subprocess.call(skopeo_cmd(image, False), stdout=devnull)
+    status_code, stdout_noauth, stderr_noauth = skopeo_inspect(image, False)
 
     if status_code == 0:
-        print "OK"
-    else:
-        print >>sys.stderr, "Could not find image %s in registry" % (image,)
-        sys.exit(1)
+        continue
+
+    print stderr_auth
+    print stderr_noauth
+
+    print >>sys.stderr, "Could not find image %s in registry" % (image,)
+    sys.exit(1)
