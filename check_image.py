@@ -21,14 +21,14 @@ else:
 SKOPEO_USER = os.environ.get('SKOPEO_USER')
 SKOPEO_PASS = os.environ.get('SKOPEO_PASS')
 
-
-def skopeo_cmd(image):
+def skopeo_cmd(image, auth=True):
     cmd = ['skopeo', 'inspect']
 
-    if SKOPEO_USER and SKOPEO_PASS:
-        cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
-    else:
-        cmd += ['--authfile', AUTH_FILE]
+    if auth:
+        if SKOPEO_USER and SKOPEO_PASS:
+            cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
+        else:
+            cmd += ['--authfile', AUTH_FILE]
 
     cmd += ['docker://{}'.format(image)]
 
@@ -59,7 +59,15 @@ for image in images:
         sys.exit(1)
 
     with open(os.devnull, 'w') as devnull:
-        status_code = subprocess.call(skopeo_cmd(image), stdout=devnull)
+        status_code = subprocess.call(skopeo_cmd(image, True), stdout=devnull)
+
+    if status_code == 0:
+        print "OK"
+        sys.exit()
+
+    # Try again without authentication in case it's public
+    with open(os.devnull, 'w') as devnull:
+        status_code = subprocess.call(skopeo_cmd(image, False), stdout=devnull)
 
     if status_code == 0:
         print "OK"
