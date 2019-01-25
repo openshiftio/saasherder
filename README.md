@@ -55,6 +55,8 @@ services:
 - `environments`: A list where you can specify multiple environments which can be selected by passing an argument `--environment`. Values in a given environment will override
   values in the top level section. Anything can be overridden but `name`, `url` and `hash`.
 
+**Note**: If `parameters` contains `IMAGE_TAG` it will override any dynamically generated value by the `hash` parameter. This can be used to deploy a new version of the manifest while using a previously built image.
+
 ## Config YAML
 
 Config file should be located in the root of the repository (to be automatically picked up by the tool). It helps SaaS Herder to find tracked services and provides default locations for download and processing of the files.
