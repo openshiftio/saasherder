@@ -55,7 +55,7 @@ services:
 - `environments`: A list where you can specify multiple environments which can be selected by passing an argument `--environment`. Values in a given environment will override
   values in the top level section. Anything can be overridden but `name`, `url` and `hash`.
 
-**Note**: If `paramaters` contains `IMAGE_TAG` it will override any dynamically generated value by the `hash` parameter. This can be used to deploy a new version of the manifest while using a previously built image.
+**Note**: If `parameters` contains `IMAGE_TAG` it will override any dynamically generated value by the `hash` parameter. This can be used to deploy a new version of the manifest while using a previously built image.
 
 ## Config YAML
 
