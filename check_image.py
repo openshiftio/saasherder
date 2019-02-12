@@ -9,7 +9,6 @@ If regex is supplied the path of the image must match this regex
 import os
 import re
 import subprocess
-
 import sys
 
 import anymarkup
@@ -52,9 +51,11 @@ except IndexError:
 
 images = []
 for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE)["items"]:
-    if i["kind"] in ["DeploymentConfig", "StatefulSet"]:
+    try:
         for c in i["spec"]["template"]["spec"]["containers"]:
             images.append(c["image"])
+    except KeyError:
+        pass
 
 success = True
 
