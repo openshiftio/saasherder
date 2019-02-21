@@ -50,7 +50,7 @@ except IndexError:
     image_path_pattern = None
 
 images = []
-for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE)["items"]:
+for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE, force_types=None)["items"]:
     try:
         for c in i["spec"]["template"]["spec"]["containers"]:
             images.append(c["image"])
