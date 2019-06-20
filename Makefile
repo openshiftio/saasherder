@@ -1,14 +1,14 @@
 .PHONY: build push build-test-container test local-test clean
 
-IMAGE_NAME := quay.io/openshiftio/saasherder
-IMAGE_TAG := $(shell git rev-parse --short=${DEVSHIFT_TAG_LEN} HEAD)
-DOCKER_CONF := $(CURDIR)/.docker
+REGISTRY := quay.io
+IMAGE_NAME := ${REGISTRY}/openshiftio/saasherder
+IMAGE_TAG := $(shell echo ${GIT_COMMIT} | cut -c1-${DEVSHIFT_TAG_LEN})
 
 build:
 	docker build --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 push:
-	docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} quay.io
+	docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} ${REGISTRY}
 	docker push $(IMAGE_NAME):$(IMAGE_TAG)
 
 build-test-container:
