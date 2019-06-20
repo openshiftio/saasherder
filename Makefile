@@ -1,4 +1,14 @@
-.PHONY: build-test-container test local-test clean
+.PHONY: build push build-test-container test local-test clean
+
+IMAGE_NAME := quay.io/openshiftio/saasherder
+IMAGE_TAG := $(shell git rev-parse --short=7 HEAD)
+DOCKER_CONF := $(CURDIR)/.docker
+
+build:
+	docker build --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+push:
+	docker --config=$(DOCKER_CONF) push $(IMAGE_NAME):$(IMAGE_TAG)
 
 build-test-container:
 	docker build -t saasherder-test -f tests/Dockerfile.test .
