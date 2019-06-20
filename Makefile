@@ -1,7 +1,7 @@
 .PHONY: build push build-test-container test local-test clean
 
 IMAGE_NAME := quay.io/openshiftio/saasherder
-IMAGE_TAG := $(shell echo ${GIT_COMMIT} | cut -c1-7)
+IMAGE_TAG := $(shell echo ${GIT_COMMIT} | cut -c1-${DEVSHIFT_TAG_LEN})
 DOCKER_CONF := $(CURDIR)/.docker
 
 build:
