@@ -8,7 +8,8 @@ build:
 	docker build --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 push:
-	docker --config=$(DOCKER_CONF) push $(IMAGE_NAME):$(IMAGE_TAG)
+	docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} quay.io
+	docker push $(IMAGE_NAME):$(IMAGE_TAG)
 
 build-test-container:
 	docker build -t saasherder-test -f tests/Dockerfile.test .
