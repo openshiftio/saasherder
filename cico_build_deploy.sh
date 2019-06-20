@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./cico_test.sh
+/bin/bash cico_test.sh
 
 DOCKER_CONF="$PWD/.docker"
 mkdir -p "$DOCKER_CONF"
