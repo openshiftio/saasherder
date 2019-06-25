@@ -6,6 +6,7 @@ RUN yum install -y epel-release && \
     yum clean all
 
 COPY . /saasherder
+COPY check_image.py /scripts
 
 RUN cd /saasherder && \
     python setup.py install && \
