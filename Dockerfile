@@ -1,7 +1,6 @@
 FROM centos:7
 
-RUN yum install -y centos-release-openshift-origin && \
-    yum install -y epel-release && \
+RUN yum install -y centos-release-openshift-origin epel-release && \
     yum install -y python2-pip origin-clients openssh-clients && \
     pip install --upgrade setuptools && \
     yum clean all
