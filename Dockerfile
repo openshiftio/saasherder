@@ -6,7 +6,7 @@ RUN yum install -y centos-release-openshift-origin epel-release && \
     yum clean all
 
 COPY . /saasherder
-COPY check_image.py /scripts
+COPY check_image.py /scripts/check_image.py
 
 RUN cd /saasherder && \
     python setup.py install && \
