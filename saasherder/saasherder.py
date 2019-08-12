@@ -135,9 +135,9 @@ class SaasHerder(object):
             for obj in data_obj.get("items"):
                 obj['metadata'].setdefault('annotations', {})
                 annotations = obj['metadata']['annotations']
-                annotations['saasherder.service'] =  "%s/%s" % (self.config.current(), service_name)
+                annotations['saasherder.service'] = "%s/%s" % (self.config.current(), service_name)
 
-        return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
+        return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
 
     def write_service_file(self, name, output=None):
         """ Writes service file to disk, either to original file name, or to a name
