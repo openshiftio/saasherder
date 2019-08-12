@@ -134,9 +134,8 @@ class SaasHerder(object):
         if data_obj.get("items"):
             for obj in data_obj.get("items"):
                 obj['metadata'].setdefault('annotations', {})
-                annotations = body['metadata']['annotations']
-                annotations['saasherder.service'] = \
-                    self.config.current() + '/' + service_name
+                annotations = obj['metadata']['annotations']
+                annotations['saasherder.service'] =  "%s/%s" % (self.config.current(), service_name)
 
         return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
 
