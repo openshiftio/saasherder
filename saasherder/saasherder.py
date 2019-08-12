@@ -129,6 +129,17 @@ class SaasHerder(object):
 
         return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
 
+    def apply_saasherder_annotations(self, data, service_name):
+        data_obj = yaml.safe_load(data)
+        if data_obj.get("items"):
+            for obj in data_obj.get("items"):
+                obj['metadata'].setdefault('annotations', {})
+                annotations = body['metadata']['annotations']
+                annotations['saasherder.service'] = \
+                    self.config.current() + '/' + service_name
+
+        return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
+
     def write_service_file(self, name, output=None):
         """ Writes service file to disk, either to original file name, or to a name
             given by output param """
@@ -357,6 +368,7 @@ class SaasHerder(object):
 
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
+                output = self.apply_saasherder_annotations(output, s['name'])
 
                 with open(output_file, "w") as fp:
                     fp.write(output)
