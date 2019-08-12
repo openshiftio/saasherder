@@ -1,5 +1,6 @@
 import os
 import re
+import filecmp
 #import pytest
 import tempfile
 import anymarkup
@@ -9,6 +10,8 @@ import subprocess
 
 service_dir = "tests/data/service"
 templates_dir = "tests/data/template"
+fixtures_dir = "tests/data/fixtures"
+
 output_dir = tempfile.mkdtemp()
 
 temp_dir = tempfile.mkdtemp()
@@ -102,24 +105,22 @@ class TestTemplating(object):
 
     assert False
 
-  def test_template_apply_dry_run(self):
-    if os.getenv("SKIP_OC", False):
-      return
+  def test_template_processed_files(self):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
     se.template("tag", "all", output_dir, local=True, template_filter=["Route"])
-    assert subprocess.call(["oc", "cluster", "up"]) == 0
-    failed = False
+
     for root, _, files in os.walk(output_dir):
       for f in files:
         if not f.endswith("yaml"):
           continue
 
         print(f)
-        if subprocess.call(["oc", "apply", "--dry-run", "-f", os.path.join(root, f)]) == 1:
-          failed = True
-    subprocess.call(["oc", "cluster", "down"])
-    assert not failed
+
+        processed = os.path.join(root, f)
+        fixture = os.path.join(fixtures_dir, f)
+
+        assert filecmp.cmp(processed, fixture)
 
   def test_template_parameters(self):
     image = "some_image"
