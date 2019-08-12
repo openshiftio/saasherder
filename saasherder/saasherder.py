@@ -131,11 +131,10 @@ class SaasHerder(object):
 
     def apply_saasherder_annotations(self, data, service_name):
         data_obj = yaml.safe_load(data)
-        if data_obj.get("items"):
-            for obj in data_obj.get("items"):
-                obj['metadata'].setdefault('annotations', {})
-                annotations = obj['metadata']['annotations']
-                annotations['saasherder.service'] = "%s/%s" % (self.config.current(), service_name)
+        for obj in data_obj.get("items", []):
+            obj['metadata'].setdefault('annotations', {})
+            annotations = obj['metadata']['annotations']
+            annotations['saasherder.service'] = "%s/%s" % (self.config.current(), service_name)
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
 
@@ -316,7 +315,7 @@ class SaasHerder(object):
 
         self.write_service_file(service_name, output_file)
 
-    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False):
+    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False, annotate=True):
         """ iterates through the services and runs oc process to generate the templates """
 
         if not find_executable("oc"):
@@ -367,7 +366,9 @@ class SaasHerder(object):
 
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
-                output = self.apply_saasherder_annotations(output, s['name'])
+
+                if annotate:
+                    output = self.apply_saasherder_annotations(output, s['name'])
 
                 with open(output_file, "w") as fp:
                     fp.write(output)
@@ -376,7 +377,7 @@ class SaasHerder(object):
                 print e.message
                 sys.exit(1)
 
-    def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False):
+    def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False, annotate=True):
         """ Process templates """
         if not output_dir:
             output_dir = self.output_dir
@@ -385,7 +386,7 @@ class SaasHerder(object):
             os.mkdir(output_dir) #FIXME
 
         if cmd_type == "tag":
-            self.process_image_tag(services, output_dir, template_filter, force, local)
+            self.process_image_tag(services, output_dir, template_filter, force, local, annotate)
 
     def get(self, cmd_type, services):
         """ Get information about services printed to stdout """
