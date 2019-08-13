@@ -5,6 +5,7 @@ import requests
 import copy
 import subprocess
 import sys
+import datetime
 import hashlib
 from distutils.spawn import find_executable
 from shutil import copyfile
@@ -131,6 +132,7 @@ class SaasHerder(object):
         return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
 
     def apply_saasherder_labels(self, data, service_name):
+        now = datetime.datetime.utcnow().replace(microsecond=0).isoformat()
         data_obj = yaml.safe_load(data)
         data_sha256sum = self.calculate_sha256sum(data)
         for obj in data_obj.get("items", []):
@@ -139,6 +141,7 @@ class SaasHerder(object):
             labels['saasherder.context'] = self.config.current()
             labels['saasherder.service'] = service_name
             labels['saasherder.sha256sum'] = data_sha256sum[:63]
+            labels['saasherder.update'] = now
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
 
