@@ -384,12 +384,12 @@ class SaasHerder(object):
             process_cmd = cmd + params_processed
 
             output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
-            
+
             logger.info("%s > %s" % (" ".join(process_cmd), output_file))
-            
+
             try:
                 output = subprocess.check_output(process_cmd)
-                
+
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
                     
