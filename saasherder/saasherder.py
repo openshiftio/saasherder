@@ -132,26 +132,33 @@ class SaasHerder(object):
 
     def apply_saasherder_labels(self, data, service_name, saas_repo_url):
         data_obj = yaml.safe_load(data)
-        data_sha256sum = self.calculate_sha256sum(data)
+        data_sha256sum = self.calculate_sha256sum_label(data)
+        labels_selector = 'saasherder.sha256sum notin (%s)' % data_sha256sum
+        if saas_repo_url:
+            saas_repo_url_hash = self.calculate_sha256sum_label(saas_repo_url)
+        
         for obj in data_obj.get("items", []):
             obj['metadata'].setdefault('labels', {})
             labels = obj['metadata']['labels']
             labels['saasherder.context'] = self.config.current()
             labels['saasherder.service'] = service_name
             labels['saasherder.sha256sum'] = data_sha256sum[:63]
-            labels_selector = 'saasherder.context in (%s), saasherder.service in (%s), saasherder.sha256sum notin (%s)' \
-                % (self.config.current(), service_name, data_sha256sum[:63])
+            labels_selector = \
+                '%s, saasherder.context in (%s), saasherder.service in (%s)' \
+                % (labels_selector, self.config.current(), service_name)
 
             if saas_repo_url:
-                labels['saasherder.saas-repo-url'] = saas_repo_url[:63]
-                labels_selector = "saasherder.saas-repo-url in (%s), %s" % (saas_repo_url[:63], labels_selector)
+                labels['saasherder.saas-repo-url-hash'] = saas_repo_url_hash
+                labels_selector = \
+                    "%s, saasherder.saas-repo-url-hash in (%s)" \
+                    % (labels_selector, saas_repo_url_hash)
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False), labels_selector
 
-    def calculate_sha256sum(self, data):
+    def calculate_sha256sum_label(self, data):
         m = hashlib.sha256()
         m.update(data)
-        return m.hexdigest()
+        return m.hexdigest()[:63]
 
     def write_service_file(self, name, output=None):
         """ Writes service file to disk, either to original file name, or to a name
