@@ -141,7 +141,6 @@ class SaasHerder(object):
             labels['saasherder.context'] = self.config.current()
             labels['saasherder.service'] = service_name
             labels['saasherder.sha256sum'] = data_sha256sum[:63]
-            labels['saasherder.update'] = now
             labels_selector = 'saasherder.context in (%s), saasherder.service in (%s), saasherder.sha256sum notin (%s)' \
                 % (self.config.current(), service_name, data_sha256sum[:63])
 
