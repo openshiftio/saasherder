@@ -138,7 +138,7 @@ class SaasHerder(object):
             labels = obj['metadata']['labels']
             labels['saasherder.context'] = self.config.current()
             labels['saasherder.service'] = service_name
-            labels['saasherder.sha256sum'] = data_sha256sum
+            labels['saasherder.sha256sum'] = data_sha256sum[:63]
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
 
