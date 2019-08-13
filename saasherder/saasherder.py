@@ -5,6 +5,7 @@ import requests
 import copy
 import subprocess
 import sys
+import hashlib
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
@@ -131,12 +132,20 @@ class SaasHerder(object):
 
     def apply_saasherder_labels(self, data, service_name):
         data_obj = yaml.safe_load(data)
+        data_sha256sum = self.calculate_sha256sum(data)
         for obj in data_obj.get("items", []):
             obj['metadata'].setdefault('labels', {})
             labels = obj['metadata']['labels']
-            labels['saasherder.service'] = "%s/%s" % (self.config.current(), service_name)
+            labels['saasherder.context'] = self.config.current()
+            labels['saasherder.service'] = service_name
+            labels['saasherder.sha256sum'] = data_sha256sum
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
+
+    def calculate_sha256sum(self, data):
+        m = hashlib.sha256()
+        m.update(data)
+        return m.hexdigest()
 
     def write_service_file(self, name, output=None):
         """ Writes service file to disk, either to original file name, or to a name
