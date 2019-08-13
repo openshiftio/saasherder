@@ -143,7 +143,10 @@ class SaasHerder(object):
             labels['saasherder.sha256sum'] = data_sha256sum[:63]
             labels['saasherder.update'] = now
 
-        return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False)
+            labels_selector = 'saasherder.context in (%s), saasherder.service in (%s), saasherder.sha256sum notin (%s)' \
+                % (self.config.current(), service_name, data_sha256sum[:63])
+
+        return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False), labels_selector
 
     def calculate_sha256sum(self, data):
         m = hashlib.sha256()
@@ -370,17 +373,20 @@ class SaasHerder(object):
             process_cmd = cmd + params_processed
 
             output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
-
+            
             logger.info("%s > %s" % (" ".join(process_cmd), output_file))
-
+            
             try:
                 output = subprocess.check_output(process_cmd)
-
+                
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
-
-                if label:
-                    output = self.apply_saasherder_labels(output, s['name'])
+                    
+                    if label:
+                        output, labels_selector = self.apply_saasherder_labels(output, s['name'])
+                        output_labels_file = os.path.join(output_dir, "%s-labels" % s["name"])
+                        with open(output_labels_file, "w") as fp:
+                            fp.write(labels_selector)
 
                 with open(output_file, "w") as fp:
                     fp.write(output)
