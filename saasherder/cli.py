@@ -53,6 +53,8 @@ def main():
                         help='Use --local option for oc process - processing happen locally instead on server')
     subparser_template.add_argument('--output-dir', default=None,
                         help='Output directory where the updated templates will be stored')
+    subparser_template.add_argument('--saas-repo-url', default=None,
+                        help='URL of saas repository (used for resource labeling)')
     subparser_template.add_argument('--filter', default=None,
                         help='Comma separated list of kinds you want to filter out')
     subparser_template.add_argument("type", choices=["tag"],
@@ -104,7 +106,9 @@ def main():
         se.update(args.type, args.service, args.value, output_file=args.output_file, verify_ssl=verify_ssl)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
-        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+        se.template(args.type, args.services, args.output_dir, filters,
+                    force=args.force, local=args.local,
+                    saas_repo_url=args.saas_repo_url)
 
     elif args.command == "get":
         for val in se.get(args.type, args.services):
