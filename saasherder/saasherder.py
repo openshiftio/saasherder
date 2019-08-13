@@ -153,8 +153,8 @@ class SaasHerder(object):
                     "%s, saasherder.saas-repo-url-sha256sum in (%s)" \
                     % (labels_selector, saas_repo_url_hash)
                 # add annotation for human readability
-                labels = obj['metadata']['annotations']
                 obj['metadata'].setdefault('annotations', {})
+                annotations = obj['metadata']['annotations']
                 annotations['saasherder.saas-repo-url'] = saas_repo_url
 
         return yaml.safe_dump(data_obj, encoding='utf-8', default_flow_style=False), labels_selector
