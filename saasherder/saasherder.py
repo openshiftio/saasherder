@@ -133,7 +133,7 @@ class SaasHerder(object):
     def apply_saasherder_labels_and_annotations(self, data, service_name, saas_repo_url):
         data_obj = yaml.safe_load(data)
         data_sha256sum = self.calculate_sha256sum_label(data)
-        labels_selector = 'saasherder.sha256sum notin (%s)' % data_sha256sum
+        labels_selector = 'saasherder.data-sha256sum notin (%s)' % data_sha256sum
         if saas_repo_url:
             saas_repo_url_hash = self.calculate_sha256sum_label(saas_repo_url)
         
@@ -142,15 +142,15 @@ class SaasHerder(object):
             labels = obj['metadata']['labels']
             labels['saasherder.context'] = self.config.current()
             labels['saasherder.service'] = service_name
-            labels['saasherder.sha256sum'] = data_sha256sum[:63]
+            labels['saasherder.data-sha256sum'] = data_sha256sum[:63]
             labels_selector = \
                 '%s, saasherder.context in (%s), saasherder.service in (%s)' \
                 % (labels_selector, self.config.current(), service_name)
 
             if saas_repo_url:
-                labels['saasherder.saas-repo-url-hash'] = saas_repo_url_hash
+                labels['saasherder.saas-repo-url-sha256sum'] = saas_repo_url_hash
                 labels_selector = \
-                    "%s, saasherder.saas-repo-url-hash in (%s)" \
+                    "%s, saasherder.saas-repo-url-sha256sum in (%s)" \
                     % (labels_selector, saas_repo_url_hash)
                 # add annotation for human readability
                 labels = obj['metadata']['annotations']
