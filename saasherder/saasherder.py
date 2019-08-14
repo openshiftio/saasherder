@@ -131,7 +131,7 @@ class SaasHerder(object):
         return yaml.dump(data_obj, encoding='utf-8', default_flow_style=False)
 
     def apply_saasherder_labels_and_annotations(self, data, service,
-                                                saas_repo_url):
+                                                saas_repo_url, annotate):
         data_obj = yaml.safe_load(data)
 
         saasherder_labels = \
@@ -144,10 +144,11 @@ class SaasHerder(object):
             for k, v in saasherder_labels.items():
                 labels[k] = v
 
-            # add annotation for human readability
-            obj['metadata'].setdefault('annotations', {})
-            annotations = obj['metadata']['annotations']
-            annotations['saasherder.saas-repo-url'] = saas_repo_url or ''
+            if annotate:
+                # add annotation for human readability
+                obj['metadata'].setdefault('annotations', {})
+                annotations = obj['metadata']['annotations']
+                annotations['saasherder.saas-repo-url'] = saas_repo_url or ''
 
         return yaml.safe_dump(data_obj, encoding='utf-8',
                               default_flow_style=False)
@@ -354,7 +355,7 @@ class SaasHerder(object):
 
         self.write_service_file(service_name, output_file)
 
-    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False, saas_repo_url=None):
+    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False):
         """ iterates through the services and runs oc process to generate the templates """
 
         if not find_executable("oc"):
@@ -404,7 +405,7 @@ class SaasHerder(object):
                 output = subprocess.check_output(process_cmd)
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
-                output = self.apply_saasherder_labels_and_annotations(output, s, saas_repo_url)
+                
                 with open(output_file, "w") as fp:
                     fp.write(output)
 
@@ -413,7 +414,7 @@ class SaasHerder(object):
                 sys.exit(1)
 
     def template(self, cmd_type, services, output_dir=None, template_filter=None,
-                 force=False, local=False, saas_repo_url=None):
+                 force=False, local=False):
         """ Process templates """
         if not output_dir:
             output_dir = self.output_dir
@@ -422,7 +423,27 @@ class SaasHerder(object):
             os.mkdir(output_dir) #FIXME
 
         if cmd_type == "tag":
-            self.process_image_tag(services, output_dir, template_filter, force, local, saas_repo_url)
+            self.process_image_tag(services, output_dir, template_filter, force, local)
+
+    def label(self, cmd_type, services, output_dir=None, saas_repo_url=None, annotate=False):
+        """ Add labels to templates """
+        if not output_dir:
+            output_dir = self.output_dir
+
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir) #FIXME
+
+        for s in self.get_services(services):
+            data = ""
+            template_file = self.get_template_file(s)
+            output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
+            with open(template_file, "r") as input_file:
+                data = input_file.read()
+            output = self.apply_saasherder_labels_and_annotations(data, s, saas_repo_url, annotate=annotate)
+            with open(output_file, "w") as output_file:
+                output_file.write(output)
+            label_selector = self.get_saasherder_label_selector(data, s, saas_repo_url, current=True)
+            print(label_selector)
 
     def get(self, cmd_type, services):
         """ Get information about services printed to stdout """
