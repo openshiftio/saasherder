@@ -406,8 +406,10 @@ class SaasHerder(object):
 
             try:
                 output = subprocess.check_output(process_cmd)
-                output = self.apply_filter(template_filter, output) if template_filter
-                output = self.apply_saasherder_labels_and_annotations(output, s, saas_repo_url) if label
+                if template_filter:
+                    output = self.apply_filter(template_filter, output)
+                if label:
+                    output = self.apply_saasherder_labels_and_annotations(output, s, saas_repo_url)
                 with open(output_file, "w") as fp:
                     fp.write(output)
 
