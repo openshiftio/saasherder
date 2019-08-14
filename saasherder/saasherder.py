@@ -354,7 +354,7 @@ class SaasHerder(object):
 
         self.write_service_file(service_name, output_file)
 
-    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False, label=True, saas_repo_url=None):
+    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False, saas_repo_url=None):
         """ iterates through the services and runs oc process to generate the templates """
 
         if not find_executable("oc"):
@@ -404,8 +404,7 @@ class SaasHerder(object):
                 output = subprocess.check_output(process_cmd)
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
-                if label:
-                    output = self.apply_saasherder_labels_and_annotations(output, s, saas_repo_url)
+                output = self.apply_saasherder_labels_and_annotations(output, s, saas_repo_url)
                 with open(output_file, "w") as fp:
                     fp.write(output)
 
@@ -414,7 +413,7 @@ class SaasHerder(object):
                 sys.exit(1)
 
     def template(self, cmd_type, services, output_dir=None, template_filter=None,
-                 force=False, local=False, label=True, saas_repo_url=None):
+                 force=False, local=False, saas_repo_url=None):
         """ Process templates """
         if not output_dir:
             output_dir = self.output_dir
@@ -423,7 +422,7 @@ class SaasHerder(object):
             os.mkdir(output_dir) #FIXME
 
         if cmd_type == "tag":
-            self.process_image_tag(services, output_dir, template_filter, force, local, label, saas_repo_url)
+            self.process_image_tag(services, output_dir, template_filter, force, local, saas_repo_url)
 
     def get(self, cmd_type, services):
         """ Get information about services printed to stdout """
