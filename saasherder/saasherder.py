@@ -136,10 +136,6 @@ class SaasHerder(object):
 
         saasherder_labels = \
             self.get_saasherder_labels(data, service, saas_repo_url)
-
-        data_sha256sum = sha256sum_short(data)
-        if saas_repo_url:
-            saas_repo_url_sha256sum = sha256sum_short(saas_repo_url)
         
         for obj in data_obj.get("items", []):
             # add labels for label selector filtering
@@ -158,13 +154,13 @@ class SaasHerder(object):
 
     @staticmethod
     def sha256sum_short(data):
-        return hashlib.sha256().update(data)[:10]
+        return hashlib.sha256(data).hexdigest()[:10]
 
     def get_saasherder_labels(self, data, service, saas_repo_url):
         labels = {}
-        labels['saasherder.data-sha256sum'] = sha256sum_short(data)
+        labels['saasherder.data-sha256sum'] = self.sha256sum_short(data)
         labels['saasherder.saas-repo-url-sha256sum'] = \
-            sha256sum_short(saas_repo_url) if saas_repo_url else ''
+            self.sha256sum_short(saas_repo_url) if saas_repo_url else ''
         labels['saasherder.context'] = self.config.current()
         labels['saasherder.service'] = service['name']
 

@@ -108,18 +108,15 @@ class TestTemplating(object):
   def test_template_processed_files(self):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
-    se.template("tag", "all", output_dir, local=True, template_filter=["Route"], label=False)
+    se.template("tag", "all", output_dir, local=True, template_filter=["Route"], label=True)
 
     for root, _, files in os.walk(output_dir):
       for f in files:
         if not f.endswith("yaml"):
           continue
 
-        print(f)
-
         processed = os.path.join(root, f)
         fixture = os.path.join(fixtures_dir, f)
-
         assert filecmp.cmp(processed, fixture)
 
   def test_template_parameters(self):

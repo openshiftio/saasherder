@@ -3,10 +3,16 @@ items:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
+    annotations:
+      saasherder.saas-repo-url: ''
     creationTimestamp: null
     generation: 1
     labels:
       run: redirector
+      saasherder.context: saas
+      saasherder.data-sha256sum: d5fd493a0b
+      saasherder.saas-repo-url-sha256sum: ''
+      saasherder.service: redirector-ignore
     name: redirector
   spec:
     replicas: 1
@@ -63,7 +69,14 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
+    annotations:
+      saasherder.saas-repo-url: ''
     creationTimestamp: null
+    labels:
+      saasherder.context: saas
+      saasherder.data-sha256sum: d5fd493a0b
+      saasherder.saas-repo-url-sha256sum: ''
+      saasherder.service: redirector-ignore
     name: redirector
   spec:
     ports:
