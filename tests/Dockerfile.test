@@ -1,5 +1,10 @@
 FROM centos
 
+############################################################
+# workaround for https://bugs.centos.org/view.php?id=16337 #
+RUN echo -e "exclude=mirror.ci.centos.org" >> /etc/yum/pluginconf.d/fastestmirror.conf
+############################################################
+
 RUN yum -y install epel-release centos-release-openshift-origin && \
     yum -y install python-pip git && \
     yum -y install origin-clients-3.9.0-1.el7.git.0.ba7faec && \
