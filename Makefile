@@ -1,4 +1,4 @@
-.PHONY: build push rc build-test-container test local-test clean
+.PHONY: build push build-test-container test local-test clean
 
 REGISTRY := quay.io
 IMAGE_NAME := ${REGISTRY}/openshiftio/saasherder
@@ -13,10 +13,6 @@ push:
 
 build-test-container:
 	docker build -t saasherder-test -f tests/Dockerfile.test .
-
-rc:
-	docker build --no-cache -t $(IMAGE_NAME):$(IMAGE_TAG)-rc .
-	docker push $(IMAGE_NAME):$(IMAGE_TAG)-rc
 
 test: build-test-container
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \

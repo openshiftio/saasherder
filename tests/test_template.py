@@ -108,7 +108,7 @@ class TestTemplating(object):
   def test_template_processed_files(self):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
-    se.template("tag", "all", output_dir, local=True, template_filter=["Route"], annotate=False)
+    se.template("tag", "all", output_dir, local=True, template_filter=["Route"])
 
     for root, _, files in os.walk(output_dir):
       for f in files:
