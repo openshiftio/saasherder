@@ -1,0 +1,94 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      saasherder.saas-repo-url: https://github.com/app-sre/saas-test
+    creationTimestamp: null
+    generation: 1
+    labels:
+      run: redirector
+      saasherder.context: saas
+      saasherder.data-sha256sum: d5fd493a0b
+      saasherder.saas-repo-url-sha256sum: 9e68b688ec
+      saasherder.service: redirector-ignore
+    name: redirector
+  spec:
+    replicas: 1
+    selector:
+      run: redirector
+    strategy:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 20m
+          memory: 20Mi
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          run: redirector
+      spec:
+        containers:
+        - env:
+          - name: REDIRECTOR_DESTINATION
+            valueFrom:
+              configMapKeyRef:
+                key: redirector.destination
+                name: redirector
+          - name: REDIRECTOR_TYPE
+            valueFrom:
+              configMapKeyRef:
+                key: redirector.type
+                name: redirector
+          image: quay.io/openshiftio/rhel-base-nginx-redirector:latest
+          imagePullPolicy: Always
+          name: redirector
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      saasherder.saas-repo-url: https://github.com/app-sre/saas-test
+    creationTimestamp: null
+    labels:
+      saasherder.context: saas
+      saasherder.data-sha256sum: d5fd493a0b
+      saasherder.saas-repo-url-sha256sum: 9e68b688ec
+      saasherder.service: redirector-ignore
+    name: redirector
+  spec:
+    ports:
+    - name: '8080'
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      run: redirector
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
