@@ -427,7 +427,7 @@ class SaasHerder(object):
             self.process_image_tag(services, output_dir, template_filter, force, local)
 
     def label(self, services, input_dir=None, output_dir=None, saas_repo_url=None,
-              annotate=False, current=True):
+              annotate=True, current=False):
         """ Add labels to processed file """
         if not output_dir:
             output_dir = self.output_dir
@@ -438,6 +438,7 @@ class SaasHerder(object):
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir) #FIXME
 
+        label_selectors = []
         for s in self.get_services(services):
             file_name = "%s.yaml" % s["name"]
             input_file_path = os.path.join(input_dir, file_name)
@@ -448,7 +449,10 @@ class SaasHerder(object):
             with open(output_file_path, "w") as output_file:
                 output_file.write(output)
             label_selector = self.get_saasherder_label_selector(data, s, saas_repo_url, current=current)
+            label_selectors.append(label_selector)
             print(label_selector)
+
+        return label_selectors
 
     def get(self, cmd_type, services):
         """ Get information about services printed to stdout """

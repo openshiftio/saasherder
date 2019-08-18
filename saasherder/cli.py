@@ -64,7 +64,7 @@ def main():
     subparser_label = subparsers.add_parser("label",
                                             help="Add labels to a service template")
 
-    subparser_label.add_argument('--annotate', default=False, action='store_true',
+    subparser_label.add_argument('--annotate', default=True, action='store_true',
                         help='Use --annotate option to add human readable annotations where required')
     subparser_label.add_argument('--current', default=False, action='store_true',
                         help='Use --current option to get the label selector of the currently deployed resources')

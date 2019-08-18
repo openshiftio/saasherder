@@ -1,16 +1,13 @@
 import os
-import re
 import filecmp
-#import pytest
 import tempfile
-import anymarkup
 from saasherder import SaasHerder
 from shutil import copytree, copyfile
-import subprocess
 
 templates_dir = "tests/data/fixtures/template"
 fixtures_dir = "tests/data/fixtures/label"
 fixtures_dir_annotate = "tests/data/fixtures/label/annotate"
+label_selectors_fixture = "label_selectors.txt"
 
 output_dir = tempfile.mkdtemp()
 
@@ -25,7 +22,7 @@ class TestLabeling(object):
     if not os.path.isdir(tests_dir):
       copytree("tests/data", tests_dir)
 
-  def test_template_processed_files(self):
+  def test_label_processed_files(self):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
     se.label("all", templates_dir, output_dir)
@@ -36,12 +33,22 @@ class TestLabeling(object):
           continue
 
         processed = os.path.join(root, f)
-        with open(processed, 'r') as r:
-          print(r.read())
         fixture = os.path.join(fixtures_dir, f)
         assert filecmp.cmp(processed, fixture)
 
-  def test_template_processed_files_annotate(self):
+  def test_label_selectors(self):
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None)
+    label_selectors = se.label("all", templates_dir, output_dir)
+
+    label_selector_fixture = os.path.join(fixtures_dir, label_selectors_fixture)
+    with open(label_selector_fixture) as f:
+        lines = f.readlines()
+    lines = [x.strip() for x in lines]
+    for i in range(len(lines)):
+        assert lines[i] == label_selectors[i]
+
+  def test_label_processed_files_annotate(self):
     output_dir = tempfile.mkdtemp()
     se = SaasHerder(temp_path, None)
     se.label("all", templates_dir, output_dir, annotate=True, saas_repo_url='https://github.com/app-sre/saas-test')
@@ -52,7 +59,17 @@ class TestLabeling(object):
           continue
 
         processed = os.path.join(root, f)
-        with open(processed, 'r') as r:
-          print(r.read())
         fixture = os.path.join(fixtures_dir_annotate, f)
         assert filecmp.cmp(processed, fixture)
+
+  def test_label_selectors_annotate(self):
+    output_dir = tempfile.mkdtemp()
+    se = SaasHerder(temp_path, None)
+    label_selectors = se.label("all", templates_dir, output_dir, annotate=True, saas_repo_url='https://github.com/app-sre/saas-test')
+
+    label_selector_fixture = os.path.join(fixtures_dir_annotate, label_selectors_fixture)
+    with open(label_selector_fixture) as f:
+        lines = f.readlines()
+    lines = [x.strip() for x in lines]
+    for i in range(len(lines)):
+        assert lines[i] == label_selectors[i]
