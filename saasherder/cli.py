@@ -61,16 +61,20 @@ def main():
                                     help="Service which template should be updated")
 
     # subcommand: label
-    subparser_template = subparsers.add_parser("label",
-                                                help="Add labels to a service template")
+    subparser_label = subparsers.add_parser("label",
+                                            help="Add labels to a service template")
 
-    subparser_template.add_argument('--annotate', default=False, action='store_true',
+    subparser_label.add_argument('--annotate', default=False, action='store_true',
                         help='Use --annotate option to add human readable annotations where required')
-    subparser_template.add_argument('--output-dir', default=None,
+    subparser_label.add_argument('--current', default=False, action='store_true',
+                        help='Use --current option to get the label selector of the currently deployed resources')
+    subparser_label.add_argument('--input-dir', default=None,
+                        help='Input directory where to find processed templates. Defaults to output-dir if not specified')
+    subparser_label.add_argument('--output-dir', default=None,
                         help='Output directory where the updated templates will be stored')
-    subparser_template.add_argument('--saas-repo-url', default=None,
+    subparser_label.add_argument('--saas-repo-url', default=None,
                         help='URL of saas repository (used for resource labeling)')
-    subparser_template.add_argument("services", nargs="*", default="all",
+    subparser_label.add_argument("services", nargs="*", default="all",
                                     help="Service which template should be updated")
 
     # subcommand: get
@@ -120,8 +124,9 @@ def main():
         se.template(args.type, args.services, args.output_dir, filters,
                     force=args.force, local=args.local)
     elif args.command == "label":
-        se.label(args.type, args.services, args.output_dir,
-                    saas_repo_url=args.saas_repo_url, annotate=args.annotate)
+        se.label(args.services, args.input_dir, args.output_dir,
+                 saas_repo_url=args.saas_repo_url, annotate=args.annotate,
+                 current=args.current)
 
     elif args.command == "get":
         for val in se.get(args.type, args.services):
