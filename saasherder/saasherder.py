@@ -355,8 +355,10 @@ class SaasHerder(object):
 
             try:
                 output = subprocess.check_output(process_cmd)
+
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
+
                 with open(output_file, "w") as fp:
                     fp.write(output)
 
