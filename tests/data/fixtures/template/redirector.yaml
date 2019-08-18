@@ -3,16 +3,10 @@ items:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    annotations:
-      saasherder.saas-repo-url: ''
     creationTimestamp: null
     generation: 1
     labels:
       run: redirector
-      saasherder.context: saas
-      saasherder.data-sha256sum: d5fd493a0b
-      saasherder.saas-repo-url-sha256sum: ''
-      saasherder.service: redirector-ignore
     name: redirector
   spec:
     replicas: 1
@@ -42,16 +36,10 @@ items:
         containers:
         - env:
           - name: REDIRECTOR_DESTINATION
-            valueFrom:
-              configMapKeyRef:
-                key: redirector.destination
-                name: redirector
+            value: https://openshift.io/
           - name: REDIRECTOR_TYPE
-            valueFrom:
-              configMapKeyRef:
-                key: redirector.type
-                name: redirector
-          image: quay.io/openshiftio/rhel-base-nginx-redirector:latest
+            value: redirect
+          image: some_image:abcdef
           imagePullPolicy: Always
           name: redirector
           ports:
@@ -69,14 +57,7 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    annotations:
-      saasherder.saas-repo-url: ''
     creationTimestamp: null
-    labels:
-      saasherder.context: saas
-      saasherder.data-sha256sum: d5fd493a0b
-      saasherder.saas-repo-url-sha256sum: ''
-      saasherder.service: redirector-ignore
     name: redirector
   spec:
     ports:

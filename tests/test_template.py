@@ -10,7 +10,7 @@ import subprocess
 
 service_dir = "tests/data/service"
 templates_dir = "tests/data/template"
-fixtures_dir = "tests/data/fixtures"
+fixtures_dir = "tests/data/fixtures/template"
 
 output_dir = tempfile.mkdtemp()
 
