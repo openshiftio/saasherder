@@ -405,7 +405,6 @@ class SaasHerder(object):
                 output = subprocess.check_output(process_cmd)
                 if template_filter:
                     output = self.apply_filter(template_filter, output)
-                
                 with open(output_file, "w") as fp:
                     fp.write(output)
 
@@ -413,8 +412,7 @@ class SaasHerder(object):
                 print e.message
                 sys.exit(1)
 
-    def template(self, cmd_type, services, output_dir=None, template_filter=None,
-                 force=False, local=False):
+    def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False):
         """ Process templates """
         if not output_dir:
             output_dir = self.output_dir
