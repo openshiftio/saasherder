@@ -121,8 +121,7 @@ def main():
         se.update(args.type, args.service, args.value, output_file=args.output_file, verify_ssl=verify_ssl)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
-        se.template(args.type, args.services, args.output_dir, filters,
-                    force=args.force, local=args.local)
+        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
     elif args.command == "label":
         se.label(args.services, args.input_dir, args.output_dir,
                  saas_repo_url=args.saas_repo_url, annotate=args.annotate,
