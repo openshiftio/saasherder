@@ -386,15 +386,17 @@ class SaasHerder(object):
         
         for obj in data_obj.get("items", []):
             # add labels for label selector filtering
-            obj['metadata'].setdefault('labels', {})
-            labels = obj['metadata']['labels']
+            labels = obj['metadata'].setdefault('labels', {})
+            if labels is None:
+                labels = {}
             for k, v in saasherder_labels.items():
                 labels[k] = v
 
             if annotate and (saas_repo_url):
                 # add annotation for human readability
-                obj['metadata'].setdefault('annotations', {})
-                annotations = obj['metadata']['annotations']
+                annotations = obj['metadata'].setdefault('annotations', {})
+                if annotations is None:
+                    annotations = {}
                 if saas_repo_url:
                     annotations['saasherder.saas-repo-url'] = saas_repo_url
 
