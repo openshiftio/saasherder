@@ -5,6 +5,7 @@ import requests
 import copy
 import subprocess
 import sys
+import hashlib
 from distutils.spawn import find_executable
 from shutil import copyfile
 from config import SaasConfig
@@ -375,6 +376,89 @@ class SaasHerder(object):
 
         if cmd_type == "tag":
             self.process_image_tag(services, output_dir, template_filter, force, local)
+
+    def apply_saasherder_labels_and_annotations(self, data, service,
+                                                saas_repo_url, annotate):
+        data_obj = yaml.safe_load(data)
+
+        saasherder_labels = \
+            self.get_saasherder_labels(data, service, saas_repo_url)
+        
+        for obj in data_obj.get("items", []):
+            # add labels for label selector filtering
+            result = obj['metadata'].setdefault('labels', {})
+            if result is None:
+                obj['metadata']['labels'] = {}
+            labels = obj['metadata']['labels']
+            for k, v in saasherder_labels.items():
+                labels[k] = v
+
+            if annotate and (saas_repo_url):
+                # add annotation for human readability
+                result = obj['metadata'].setdefault('annotations', {})
+                if result is None:
+                    obj['metadata']['annotations'] = {}
+                annotations = obj['metadata']['annotations']
+                if saas_repo_url:
+                    annotations['saasherder.saas-repo-url'] = saas_repo_url
+
+        return yaml.safe_dump(data_obj, encoding='utf-8',
+                              default_flow_style=False)
+
+    @staticmethod
+    def sha256sum_short(data):
+        return hashlib.sha256(data).hexdigest()[:10]
+
+    def get_saasherder_labels(self, data, service, saas_repo_url):
+        labels = {}
+        labels['saasherder.data-sha256sum'] = self.sha256sum_short(data)
+        if saas_repo_url:
+            labels['saasherder.saas-repo-url-sha256sum'] = \
+                self.sha256sum_short(saas_repo_url)
+        labels['saasherder.context'] = self.config.current()
+        labels['saasherder.service'] = service['name']
+
+        return labels
+
+    def get_saasherder_label_selector(self, data, service, saas_repo_url,
+                                      current=True):
+        labels = self.get_saasherder_labels(data, service, saas_repo_url)
+        label_selector = ''
+        for k, v in labels.items():
+            comma = ", " if label_selector else ""
+            label_selector = "%s%s%s in (%s)" % (label_selector, comma, k, v)
+        if not current:
+            label_selector = label_selector.replace('data-sha256sum in', 'data-sha256sum notin')
+
+        return label_selector
+
+    def label(self, services, input_dir=None, output_dir=None, saas_repo_url=None,
+              annotate=True, current=False):
+        """ Add labels to processed file """
+        if not output_dir:
+            output_dir = self.output_dir
+
+        if not input_dir:
+            input_dir = output_dir
+
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir) #FIXME
+
+        label_selectors = []
+        for s in self.get_services(services):
+            file_name = "%s.yaml" % s["name"]
+            input_file_path = os.path.join(input_dir, file_name)
+            with open(input_file_path, "r") as input_file:
+                data = input_file.read()
+            output = self.apply_saasherder_labels_and_annotations(data, s, saas_repo_url, annotate=annotate)
+            output_file_path = os.path.join(output_dir, file_name)
+            with open(output_file_path, "w") as output_file:
+                output_file.write(output)
+            label_selector = self.get_saasherder_label_selector(data, s, saas_repo_url, current=current)
+            label_selectors.append(label_selector)
+            print(label_selector)
+
+        return label_selectors
 
     def get(self, cmd_type, services):
         """ Get information about services printed to stdout """

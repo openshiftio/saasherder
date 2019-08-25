@@ -60,6 +60,23 @@ def main():
     subparser_template.add_argument("services", nargs="*", default="all",
                                     help="Service which template should be updated")
 
+    # subcommand: label
+    subparser_label = subparsers.add_parser("label",
+                                            help="Add labels to a service template")
+
+    subparser_label.add_argument('--annotate', default=True, action='store_true',
+                        help='Use --annotate option to add human readable annotations where required')
+    subparser_label.add_argument('--current', default=False, action='store_true',
+                        help='Use --current option to get the label selector of the currently deployed resources')
+    subparser_label.add_argument('--input-dir', default=None,
+                        help='Input directory where to find processed templates. Defaults to output-dir if not specified')
+    subparser_label.add_argument('--output-dir', default=None,
+                        help='Output directory where the updated templates will be stored')
+    subparser_label.add_argument('--saas-repo-url', default=None,
+                        help='URL of saas repository (used for resource labeling)')
+    subparser_label.add_argument("services", nargs="*", default="all",
+                                    help="Service which template should be updated")
+
     # subcommand: get
     subparser_get = subparsers.add_parser("get", help="Extracts info from a service")
 
@@ -105,6 +122,10 @@ def main():
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
         se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+    elif args.command == "label":
+        se.label(args.services, args.input_dir, args.output_dir,
+                 saas_repo_url=args.saas_repo_url, annotate=args.annotate,
+                 current=args.current)
 
     elif args.command == "get":
         for val in se.get(args.type, args.services):

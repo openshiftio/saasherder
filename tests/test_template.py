@@ -10,7 +10,7 @@ import subprocess
 
 service_dir = "tests/data/service"
 templates_dir = "tests/data/template"
-fixtures_dir = "tests/data/fixtures"
+fixtures_dir = "tests/data/fixtures/template"
 
 output_dir = tempfile.mkdtemp()
 
@@ -115,11 +115,8 @@ class TestTemplating(object):
         if not f.endswith("yaml"):
           continue
 
-        print(f)
-
         processed = os.path.join(root, f)
         fixture = os.path.join(fixtures_dir, f)
-
         assert filecmp.cmp(processed, fixture)
 
   def test_template_parameters(self):
