@@ -425,10 +425,10 @@ class SaasHerder(object):
         labels = self.get_saasherder_labels(data, service, saas_repo_url)
         label_selector = ''
         for k, v in labels.items():
-            comma = ", " if label_selector else ""
-            label_selector = "%s%s%s in (%s)" % (label_selector, comma, k, v)
+            comma = "," if label_selector else ""
+            label_selector = "%s%s%s==%s" % (label_selector, comma, k, v)
         if not current:
-            label_selector = label_selector.replace('data-sha256sum in', 'data-sha256sum notin')
+            label_selector = label_selector.replace('data-sha256sum==', 'data-sha256sum!=')
 
         return label_selector
 
