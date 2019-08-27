@@ -1,4 +1,4 @@
-saasherder.saas-repo-url-sha256sum in (9e68b688ec), saasherder.service in (multiple_services), saasherder.data-sha256sum notin (ab0d2547fe), saasherder.context in (saas)
-saasherder.saas-repo-url-sha256sum in (9e68b688ec), saasherder.service in (hash_length), saasherder.data-sha256sum notin (595feb9b05), saasherder.context in (saas)
-saasherder.saas-repo-url-sha256sum in (9e68b688ec), saasherder.service in (redirector), saasherder.data-sha256sum notin (21281f3747), saasherder.context in (saas)
-saasherder.saas-repo-url-sha256sum in (9e68b688ec), saasherder.service in (redirector-ignore), saasherder.data-sha256sum notin (d5fd493a0b), saasherder.context in (saas)
+saasherder.saas-repo-url-sha256sum==9e68b688ec,saasherder.service==multiple_services,saasherder.data-sha256sum!=ab0d2547fe,saasherder.context==saas
+saasherder.saas-repo-url-sha256sum==9e68b688ec,saasherder.service==hash_length,saasherder.data-sha256sum!=595feb9b05,saasherder.context==saas
+saasherder.saas-repo-url-sha256sum==9e68b688ec,saasherder.service==redirector,saasherder.data-sha256sum!=21281f3747,saasherder.context==saas
+saasherder.saas-repo-url-sha256sum==9e68b688ec,saasherder.service==redirector-ignore,saasherder.data-sha256sum!=d5fd493a0b,saasherder.context==saas
