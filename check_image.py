@@ -13,6 +13,8 @@ import sys
 
 import anymarkup
 
+sys.exit(0)
+
 if os.environ.get('AUTH_FILE'):
     AUTH_FILE = os.environ.get('AUTH_FILE')
 else:
