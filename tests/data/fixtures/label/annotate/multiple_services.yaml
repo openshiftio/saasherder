@@ -38,6 +38,8 @@ items:
         creationTimestamp: null
         labels:
           run: redirector
+          saasherder.context: saas
+          saasherder.service: multiple_services
       spec:
         containers:
         - env:
