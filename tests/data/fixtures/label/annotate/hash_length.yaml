@@ -38,6 +38,8 @@ items:
         creationTimestamp: null
         labels:
           run: redirector
+          saasherder.context: saas
+          saasherder.service: hash_length
       spec:
         containers:
         - env:

@@ -2,7 +2,7 @@ FROM centos:7
 
 ############################################################
 # workaround for https://bugs.centos.org/view.php?id=16337 #
-RUN echo -e "exclude=mirror.ci.centos.org" >> /etc/yum/pluginconf.d/fastestmirror.conf
+# RUN echo -e "exclude=mirror.ci.centos.org" >> /etc/yum/pluginconf.d/fastestmirror.conf
 ############################################################
 
 RUN yum install -y centos-release-openshift-origin epel-release && \

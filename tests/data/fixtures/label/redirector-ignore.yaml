@@ -35,6 +35,8 @@ items:
         creationTimestamp: null
         labels:
           run: redirector
+          saasherder.context: saas
+          saasherder.service: redirector-ignore
       spec:
         containers:
         - env:

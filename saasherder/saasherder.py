@@ -386,12 +386,30 @@ class SaasHerder(object):
         
         for obj in data_obj.get("items", []):
             # add labels for label selector filtering
-            result = obj['metadata'].setdefault('labels', {})
-            if result is None:
-                obj['metadata']['labels'] = {}
-            labels = obj['metadata']['labels']
+            labels = obj['metadata'].setdefault('labels', {})
             for k, v in saasherder_labels.items():
                 labels[k] = v
+
+            # apply pod labels where applicable
+            template = None
+            try:
+                # Deployment, DeploymentConfig, Job, DaemonSet
+                # StatefulSet, ReplicaSet, ReplicationController
+                template = obj['spec']['template']
+            except KeyError:
+                pass
+            try:
+                # CronJob
+                template = obj['spec']['jobTemplate']['spec']['template']
+            except KeyError:
+                pass
+            if template:
+                pod_labels = template.setdefault('metadata', {}).setdefault('labels', {})
+                saasherder_pod_labels = \
+                    self.get_saasherder_labels(data, service, saas_repo_url,
+                                                pod_labels=True)
+                for k, v in saasherder_pod_labels.items():
+                    pod_labels[k] = v
 
             if annotate and (saas_repo_url):
                 # add annotation for human readability
@@ -409,14 +427,18 @@ class SaasHerder(object):
     def sha256sum_short(data):
         return hashlib.sha256(data).hexdigest()[:10]
 
-    def get_saasherder_labels(self, data, service, saas_repo_url):
+    def get_saasherder_labels(self, data, service, saas_repo_url,
+                              pod_labels=False):
         labels = {}
+        labels['saasherder.context'] = self.config.current()
+        labels['saasherder.service'] = service['name']
+        if pod_labels:
+            return labels
+
         labels['saasherder.data-sha256sum'] = self.sha256sum_short(data)
         if saas_repo_url:
             labels['saasherder.saas-repo-url-sha256sum'] = \
                 self.sha256sum_short(saas_repo_url)
-        labels['saasherder.context'] = self.config.current()
-        labels['saasherder.service'] = service['name']
 
         return labels
 
