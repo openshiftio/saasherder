@@ -49,17 +49,17 @@ try:
 except IndexError:
     image_path_pattern = None
 
-images = []
+images = set()
 for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE, force_types=None)["items"]:
     try:
         for c in i["spec"]["template"]["spec"]["containers"]:
-            images.append(c["image"])
+            images.add(c["image"])
     except KeyError:
         pass
 
 success = True
 
-for image in set(images):
+for image in images:
     if image_path_pattern and not image_path_pattern.search(image):
         print >>sys.stderr, ["ERROR_NO_MATCH",
                              image, image_path_pattern.pattern]
