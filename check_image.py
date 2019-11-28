@@ -59,7 +59,7 @@ for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE, force_types=None)["items"]:
 
 success = True
 
-for image in images:
+for image in set(images):
     if image_path_pattern and not image_path_pattern.search(image):
         print >>sys.stderr, ["ERROR_NO_MATCH",
                              image, image_path_pattern.pattern]
