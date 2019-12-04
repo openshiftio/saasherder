@@ -224,10 +224,14 @@ class SaasHerder(object):
             result = [self.services.get(s) for s in service_names if self.services.get(s)]
         else:
             # single service
-            result = [self.services.get(service_names)]
+            service = self.services.get(service_names)
+            if service:
+                result = [service]
+            else:
+                result = []
 
         if len(result) == 0:
-            logger.error("Could not find services %s" % service_names)
+            logger.error("Could not find services '%s' in the saas repo" % service_names)
 
         return result
 
@@ -280,10 +284,9 @@ class SaasHerder(object):
         """ Update service object and write it to file """
         services = self.get_services(service_name)
         if len(services) == 0:
-            raise Exception("Could not found the service")
+            raise Exception("Could not find a service called '%s' in the saas repo" % service_name)
         elif len(services) > 1:
             raise Exception("Expecting only one service")
-
         service = services[0]
 
         if service[cmd_type] == value:
