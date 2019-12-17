@@ -380,8 +380,7 @@ class SaasHerder(object):
         if cmd_type == "tag":
             self.process_image_tag(services, output_dir, template_filter, force, local)
 
-    def apply_saasherder_labels_and_annotations(self, data, service,
-                                                saas_repo_url, annotate):
+    def apply_saasherder_labels(self, data, service, saas_repo_url):
         data_obj = yaml.safe_load(data)
 
         saasherder_labels = \
@@ -413,15 +412,6 @@ class SaasHerder(object):
                                                 pod_labels=True)
                 for k, v in saasherder_pod_labels.items():
                     pod_labels[k] = v
-
-            if annotate and (saas_repo_url):
-                # add annotation for human readability
-                result = obj['metadata'].setdefault('annotations', {})
-                if result is None:
-                    obj['metadata']['annotations'] = {}
-                annotations = obj['metadata']['annotations']
-                if saas_repo_url:
-                    annotations['saasherder.saas-repo-url'] = saas_repo_url
 
         return yaml.safe_dump(data_obj, encoding='utf-8',
                               default_flow_style=False)
@@ -458,7 +448,7 @@ class SaasHerder(object):
         return label_selector
 
     def label(self, services, input_dir=None, output_dir=None, saas_repo_url=None,
-              annotate=True, current=False):
+              current=False):
         """ Add labels to processed file """
         if not output_dir:
             output_dir = self.output_dir
@@ -475,7 +465,7 @@ class SaasHerder(object):
             input_file_path = os.path.join(input_dir, file_name)
             with open(input_file_path, "r") as input_file:
                 data = input_file.read()
-            output = self.apply_saasherder_labels_and_annotations(data, s, saas_repo_url, annotate=annotate)
+            output = self.apply_saasherder_labels(data, s, saas_repo_url)
             output_file_path = os.path.join(output_dir, file_name)
             with open(output_file_path, "w") as output_file:
                 output_file.write(output)

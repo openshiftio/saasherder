@@ -64,8 +64,6 @@ def main():
     subparser_label = subparsers.add_parser("label",
                                             help="Add labels to a service template")
 
-    subparser_label.add_argument('--annotate', default=True, action='store_true',
-                        help='Use --annotate option to add human readable annotations where required')
     subparser_label.add_argument('--current', default=False, action='store_true',
                         help='Use --current option to get the label selector of the currently deployed resources')
     subparser_label.add_argument('--input-dir', default=None,
@@ -124,8 +122,7 @@ def main():
         se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
     elif args.command == "label":
         se.label(args.services, args.input_dir, args.output_dir,
-                 saas_repo_url=args.saas_repo_url, annotate=args.annotate,
-                 current=args.current)
+                 saas_repo_url=args.saas_repo_url, current=args.current)
 
     elif args.command == "get":
         for val in se.get(args.type, args.services):

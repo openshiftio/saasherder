@@ -3,8 +3,6 @@ items:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    annotations:
-      saasherder.saas-repo-url: https://github.com/app-sre/saas-test
     creationTimestamp: null
     generation: 1
     labels:
@@ -65,8 +63,6 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    annotations:
-      saasherder.saas-repo-url: https://github.com/app-sre/saas-test
     creationTimestamp: null
     labels:
       saasherder.context: saas
