@@ -461,8 +461,8 @@ class SaasHerder(object):
 
         label_selectors = []
         for s in self.get_services(services):
-            if s.get("skip") and not force:
-                logger.warning("INFO: Skipping %s, use -f to force labeling of all templates" % s.get("name"))
+            if s.get("skip"):
+                logger.warning("INFO: Skipping labeling of %s" % s.get("name"))
                 continue
 
             file_name = "%s.yaml" % s["name"]
