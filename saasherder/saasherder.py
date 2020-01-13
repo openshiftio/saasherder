@@ -461,6 +461,10 @@ class SaasHerder(object):
 
         label_selectors = []
         for s in self.get_services(services):
+            if s.get("skip"):
+                logger.warning("INFO: Skipping labeling of %s" % s.get("name"))
+                continue
+
             file_name = "%s.yaml" % s["name"]
             input_file_path = os.path.join(input_dir, file_name)
             with open(input_file_path, "r") as input_file:
