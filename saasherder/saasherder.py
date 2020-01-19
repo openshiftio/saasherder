@@ -344,6 +344,12 @@ class SaasHerder(object):
                 parameters = []
 
             for key, val in service_params.iteritems():
+                # due to the usage of anymarkup
+                # we still want to pass strings in this case
+                if val is True:
+                    val = 'true'
+                elif val is False:
+                    val = 'false'
                 parameters.append({"name": key, "value": val})
 
             params_processed = ["%s=%s" % (i["name"], i["value"]) for i in parameters]
