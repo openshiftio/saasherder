@@ -68,21 +68,19 @@ for image in images:
 
     attempt = 1
     max_attemps = 5
-    attempt_success = False
-    while not attempt_success and attempt <= max_attemps:
+    while True:
         status_code, stdout, stderr = skopeo_inspect(image)
         if status_code == 0:
             print ["OK", image]
-            attempt_success = True
-            continue
+            break
 
         print >>sys.stderr, ["ERROR", image, stderr]
         if attempt < max_attemps:
             time.sleep(attempt)
-        attempt += 1
-
-    if not attempt_success:
-        success = False
+            attempt += 1
+        else:
+            success = False
+            break
 
 if not success:
     sys.exit(1)
