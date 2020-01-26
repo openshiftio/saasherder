@@ -29,7 +29,6 @@ def skopeo_inspect(image):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if p.returncode == 0:
-        print('here!')
         return (p.returncode, stdout, stderr)
 
     # try with authentication
