@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 import anymarkup
 
@@ -22,14 +23,13 @@ SKOPEO_USER = os.environ.get('SKOPEO_USER')
 SKOPEO_PASS = os.environ.get('SKOPEO_PASS')
 
 
-def skopeo_inspect(image, auth=True):
+def skopeo_inspect(image):
     cmd = ['skopeo', 'inspect']
 
-    if auth:
-        if SKOPEO_USER and SKOPEO_PASS:
-            cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
-        else:
-            cmd += ['--authfile', AUTH_FILE]
+    if SKOPEO_USER and SKOPEO_PASS:
+        cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
+    else:
+        cmd += ['--authfile', AUTH_FILE]
 
     cmd += ['docker://{}'.format(image)]
 
@@ -66,19 +66,21 @@ for image in images:
         success = False
         continue
 
-    status_code, stdout_auth, stderr_auth = skopeo_inspect(image, True)
-    if status_code == 0:
-        print ["OK_AUTH", image]
-        continue
+    attempt = 1
+    max_attemps = 5
+    while True:
+        status_code, stdout, stderr = skopeo_inspect(image)
+        if status_code == 0:
+            print ["OK", image]
+            break
 
-    status_code, stdout_noauth, stderr_noauth = skopeo_inspect(image, False)
-    if status_code == 0:
-        print ["OK_NOAUTH", image]
-        continue
-
-    print >>sys.stderr, ["ERROR_AUTH", image, stderr_auth]
-    print >>sys.stderr, ["ERROR_NOAUTH", image, stderr_noauth]
-    success = False
+        print >>sys.stderr, ["ERROR", image, stderr]
+        if attempt < max_attemps:
+            time.sleep(attempt)
+            attempt += 1
+        else:
+            success = False
+            break
 
 if not success:
     sys.exit(1)
