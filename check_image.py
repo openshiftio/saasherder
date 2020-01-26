@@ -24,14 +24,18 @@ SKOPEO_PASS = os.environ.get('SKOPEO_PASS')
 
 
 def skopeo_inspect(image):
-    cmd = ['skopeo', 'inspect']
+    # try without authentication first
+    cmd = ['skopeo', 'inspect', 'docker://{}'.format(image)]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    if p.returncode == 0:
+        return (p.returncode, stdout, stderr)
 
+    # try with authentication
     if SKOPEO_USER and SKOPEO_PASS:
         cmd += ['--creds', '{}:{}'.format(SKOPEO_USER, SKOPEO_PASS)]
     else:
         cmd += ['--authfile', AUTH_FILE]
-
-    cmd += ['docker://{}'.format(image)]
 
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
