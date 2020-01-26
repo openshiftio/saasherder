@@ -62,7 +62,7 @@ success = True
 for image in images:
     if image_path_pattern and not image_path_pattern.search(image):
         print >>sys.stderr, ["ERROR_NO_MATCH",
-                            image, image_path_pattern.pattern]
+                             image, image_path_pattern.pattern]
         success = False
         continue
 
