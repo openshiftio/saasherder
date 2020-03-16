@@ -1,15 +1,17 @@
-import os
-import anymarkup
-import yaml
-import requests
 import copy
+import hashlib
+import json
+import os
 import subprocess
 import sys
-import hashlib
 from distutils.spawn import find_executable
 from shutil import copyfile
-from config import SaasConfig
 
+import anymarkup
+import requests
+import yaml
+
+from config import SaasConfig
 from validation import VALIDATION_RULES
 
 import logging
@@ -350,6 +352,10 @@ class SaasHerder(object):
                     val = 'true'
                 elif val is False:
                     val = 'false'
+
+                if any([isinstance(val, t) for t in [dict, list, tuple]]):
+                    val = json.dumps(val)
+
                 parameters.append({"name": key, "value": val})
 
             params_processed = ["%s=%s" % (i["name"], i["value"]) for i in parameters]
@@ -391,7 +397,7 @@ class SaasHerder(object):
 
         saasherder_labels = \
             self.get_saasherder_labels(data, service, saas_repo_url)
-        
+
         for obj in data_obj.get("items", []):
             # add labels for label selector filtering
             labels = obj['metadata'].setdefault('labels', {})
