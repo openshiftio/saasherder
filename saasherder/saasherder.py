@@ -312,7 +312,11 @@ class SaasHerder(object):
 
         self.write_service_file(service_name, output_file)
 
-    def process_image_tag(self, services, output_dir, template_filter=None, force=False, local=False):
+    def process_image_tag(self, services, output_dir,
+                          template_filter=None,
+                          force=False,
+                          local=False,
+                          ignore_unknown_parameters=False):
         """ iterates through the services and runs oc process to generate the templates """
 
         if not find_executable("oc"):
@@ -360,8 +364,16 @@ class SaasHerder(object):
 
             params_processed = ["%s=%s" % (i["name"], i["value"]) for i in parameters]
             local_opt = "--local" if local else ""
+            ignore_unknown_parameters_opt = \
+                "--ignore-unknown-parameters" if ignore_unknown_parameters else ""
 
-            cmd = ["oc", "process", local_opt, "--output", "yaml", "-f", template_file]
+            cmd = [
+                "oc", "process",
+                local_opt,
+                ignore_unknown_parameters_opt,
+                "--output", "yaml",
+                "-f", template_file
+            ]
             process_cmd = cmd + params_processed
 
             output_file = os.path.join(output_dir, "%s.yaml" % s["name"])
@@ -381,7 +393,12 @@ class SaasHerder(object):
                 print e.message
                 sys.exit(1)
 
-    def template(self, cmd_type, services, output_dir=None, template_filter=None, force=False, local=False):
+    def template(self, cmd_type, services,
+                 output_dir=None,
+                 template_filter=None,
+                 force=False,
+                 local=False,
+                 ignore_unknown_parameters=False):
         """ Process templates """
         if not output_dir:
             output_dir = self.output_dir
@@ -390,7 +407,12 @@ class SaasHerder(object):
             os.mkdir(output_dir) #FIXME
 
         if cmd_type == "tag":
-            self.process_image_tag(services, output_dir, template_filter, force, local)
+            self.process_image_tag(
+                services, output_dir,
+                template_filter,
+                force,
+                local,
+                ignore_unknown_parameters)
 
     def apply_saasherder_labels(self, data, service, saas_repo_url):
         data_obj = yaml.safe_load(data)

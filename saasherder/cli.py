@@ -51,6 +51,8 @@ def main():
                         help='Force processing of all templates (i.e. those with skip: True)')
     subparser_template.add_argument('--local', default=False, action='store_true',
                         help='Use --local option for oc process - processing happen locally instead on server')
+    subparser_template.add_argument('--ignore-unknown-parameters', default=False, action='store_true',
+                        help='If true, will not stop processing if a provided parameter does not exist in the template.')
     subparser_template.add_argument('--output-dir', default=None,
                         help='Output directory where the updated templates will be stored')
     subparser_template.add_argument('--filter', default=None,
@@ -119,7 +121,10 @@ def main():
         se.update(args.type, args.service, args.value, output_file=args.output_file, verify_ssl=verify_ssl)
     elif args.command == "template":
         filters = args.filter.split(",") if args.filter else None
-        se.template(args.type, args.services, args.output_dir, filters, force=args.force, local=args.local)
+        se.template(args.type, args.services, args.output_dir, filters,
+                    force=args.force,
+                    local=args.local,
+                    ignore_unknown_parameters=args.ignore_unknown_parameters)
     elif args.command == "label":
         se.label(args.services, args.input_dir, args.output_dir,
                  saas_repo_url=args.saas_repo_url, current=args.current)
