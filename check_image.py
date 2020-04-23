@@ -59,10 +59,11 @@ for i in anymarkup.parse_file(OPENSHIFT_TEMPLATE, force_types=None)["items"]:
         for c in i["spec"]["template"]["spec"]["containers"]:
             images.add(c["image"])
     except KeyError:
-        for c in i["spec"]:
-            images.add(c["image"])
-        except KeyError:
-            pass
+        try:
+            for c in i["spec"]:
+                images.add(c["image"])
+            except KeyError:
+                pass
 
 success = True
 
