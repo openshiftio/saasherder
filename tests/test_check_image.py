@@ -19,7 +19,6 @@ class TestCheckImage(object):
   def test_check_image_pass(self):
     DEVNULL = open(os.devnull, 'w')
     target_test = fixtures_dir + "/" +  pass_fixture
-    print(os.getcwd())
     proc = Popen([python_bin, check_image_py, target_test],
                  stdout=DEVNULL, stderr=DEVNULL)
     proc.communicate()
