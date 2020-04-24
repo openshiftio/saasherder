@@ -1,7 +1,5 @@
 import os
 import pytest
-import tempfile
-from shutil import copyfile
 from subprocess import Popen
 
 fixtures_dir = "tests/data/fixtures/customresource"
