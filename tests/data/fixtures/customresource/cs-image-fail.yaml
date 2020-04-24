@@ -1,0 +1,20 @@
+apiVersion: v1
+items:
+- apiVersion: operators.coreos.com/v1alpha1
+  kind: CatalogSource
+  metadata:
+    name: dummy-cs
+  spec:
+    displayName: CS Image Test
+    image: quay.io/app-sre/quay:nope-b4df00d
+    publisher: Some Developer
+    sourceType: grpc
+- apiVersion: operators.coreos.com/v1alpha2
+  kind: OperatorGroup
+  metadata:
+    name: dummy-cs-og
+  spec:
+    targetNamespaces:
+    - dummy-cs
+kind: List
+metadata: {}
