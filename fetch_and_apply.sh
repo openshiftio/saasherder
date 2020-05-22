@@ -33,6 +33,16 @@ if [ -z "${ENVIRONMENT}" ]; then
     ENVIRONMENT="None"
 fi
 
+# if KUBECONFVER is none, remove this var from the env
+if [ "${KUBECONFVER}" == "none" ]; then
+  unset KUBECONFVER
+fi
+
+# if KUBECONFVER is set, append to the kube conf path (ex: .kube/config-v4)
+if [ ! -z "${KUBECONFVER}" ]; then
+  CONF="/home/`whoami`/.kube/config-${KUBECONFVER}"
+fi
+
 SAAS_CONTEXTS=$(${CMD} config get-contexts)
 echo -e "Found contexts:\n${SAAS_CONTEXTS}"
 
@@ -94,7 +104,11 @@ for g in `echo ${SAAS_CONTEXTS}`; do
     CONTEXT=${g}
 
     if ! ${DRY_RUN}; then
-        CONF="/home/`whoami`/.kube/cfg-${CONTEXT}"
+        if [ -z "${KUBECONFVER}" ]; then
+          CONF="/home/`whoami`/.kube/cfg-${CONTEXT}"
+        else
+          CONF="/home/`whoami`/.kube/cfg-${CONTEXT}-${KUBECONFVER}"
+        fi
         if [ ! -e ${CONF} ] ; then
             echo "Could not find OpenShift configuration for ${CONTEXT}"; exit 1;
         fi
