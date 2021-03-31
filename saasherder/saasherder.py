@@ -349,6 +349,18 @@ class SaasHerder(object):
             else:
                 parameters = []
 
+            # Generate the REPO_DIGEST parameter. Only do this if
+            # - requested by the user (granny switch); and
+            # - we have all the information we need to figure out the image
+            #   URI.
+            if service_params.get('USE_REPO_DIGEST', '') == "true" and 'REGISTRY_IMG' in service_params and 'IMAGE_TAG' in service_params:
+                logger.info("Generating REPO_DIGEST.")
+                import docker
+                docker_client = docker.from_env()
+                reg_img = service_params['REGISTRY_IMG']
+                reg_data = docker_client.images.get_registry_data('%s:%s' % (reg_img, service_params['IMAGE_TAG']))
+                parameters.append({"name": "REPO_DIGEST", "value": '%s@%s' % (reg_img, reg_data.attrs['Descriptor']['digest'])})
+
             for key, val in service_params.iteritems():
                 # due to the usage of anymarkup
                 # we still want to pass strings in this case
